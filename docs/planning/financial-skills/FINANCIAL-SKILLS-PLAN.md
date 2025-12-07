@@ -17,6 +17,156 @@ Transform the 7 BMAD stock trading agents into a comprehensive PAI skill-based "
 3. **Free Data Sources** - yfinance, Alpaca paper trading, Finnhub free tier, web research
 4. **Multi-Philosophy Approach** - Capital preservation foundation with growth orientation, data-driven quantitative methods, open to all strategies
 5. **Modular Architecture** - Skills can work independently or orchestrate together
+6. **PAI Ecosystem Integration** - Financial skills leverage existing PAI capabilities (research, fabric, etc.)
+
+---
+
+## PAI Skill Integration (Critical Architecture)
+
+**Financial skills are CONSUMERS of existing PAI capabilities, not replacements.**
+
+### Integration with Research Skill
+
+The existing `research` skill provides powerful capabilities that financial skills should leverage:
+
+| Research Skill Feature | Financial Skill Usage |
+|------------------------|----------------------|
+| Multi-source parallel research (Claude, Perplexity, Gemini) | Company research, competitive analysis, industry trends |
+| Content retrieval (WebFetch → BrightData → Apify) | SEC filings, earnings transcripts, news articles |
+| 242+ Fabric patterns | `analyze_paper` for reports, `extract_wisdom` for calls |
+| YouTube extraction | Earnings calls, investor presentations, interviews |
+| Knowledge extraction | Synthesizing research into actionable insights |
+
+### Integration Flow Examples
+
+**Example 1: "Find good nuclear energy companies"**
+
+```
+User Request
+    ↓
+Finance Skill (orchestrator)
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 1. MacroStrategy: Define "nuclear energy" investment theme  │
+│    → Criteria: utilities, uranium miners, enrichment, SMRs  │
+│                                                             │
+│ 2. Research Skill: Parallel web research                   │ ← EXISTING PAI SKILL
+│    → Launch claude-researcher, perplexity-researcher        │
+│    → Search: "best nuclear energy stocks 2025"              │
+│    → Search: "uranium mining companies analysis"            │
+│    → Search: "nuclear power plant operators investing"      │
+│                                                             │
+│ 3. FundamentalAnalysis: Screen candidates                   │
+│    → Apply valuation criteria to research results           │
+│    → Rank by moat strength, growth potential                │
+│                                                             │
+│ 4. RiskManagement: Assess sector risks                      │
+│    → Regulatory risk, concentration risk                    │
+│    → Position sizing recommendations                        │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+Synthesized recommendation with ranked candidates
+```
+
+**Example 2: "What's the sentiment on NVDA?"**
+
+```
+User Request
+    ↓
+Finance Skill (orchestrator)
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 1. SentimentAnalysis: Structure the query                   │
+│    → Define sentiment dimensions to analyze                 │
+│                                                             │
+│ 2. Research Skill: Gather current information              │ ← EXISTING PAI SKILL
+│    → News sentiment (recent articles, analyst reports)      │
+│    → Social sentiment (Reddit, Twitter, StockTwits)         │
+│    → Institutional sentiment (13F filings, fund letters)    │
+│                                                             │
+│ 3. SentimentAnalysis: Interpret findings                    │
+│    → Score sentiment across dimensions                      │
+│    → Identify divergences and inflection points             │
+│                                                             │
+│ 4. QuantAnalysis: Correlate with price action               │
+│    → Options flow analysis                                  │
+│    → Volume confirmation                                    │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+Multi-dimensional sentiment report with trading implications
+```
+
+**Example 3: "Analyze this earnings call" (YouTube URL)**
+
+```
+User Request + YouTube URL
+    ↓
+Finance Skill (orchestrator)
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Research Skill: Extract content                         │ ← EXISTING PAI SKILL
+│    → YouTube extraction via `fabric -y`                     │
+│    → Transcript + key moments                               │
+│                                                             │
+│ 2. Research Skill: Apply Fabric patterns                   │ ← EXISTING PAI SKILL
+│    → `analyze_paper` for structured analysis                │
+│    → `extract_wisdom` for key insights                      │
+│                                                             │
+│ 3. FundamentalAnalysis: Interpret financial content         │
+│    → Revenue/earnings commentary                            │
+│    → Guidance analysis                                      │
+│    → Management tone assessment                             │
+│                                                             │
+│ 4. SentimentAnalysis: Management confidence scoring         │
+│    → Language pattern analysis                              │
+│    → Compare to previous calls                              │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+Comprehensive earnings analysis with sentiment and implications
+```
+
+### Other PAI Skill Integrations
+
+| Existing Skill | Integration Point |
+|----------------|-------------------|
+| **Fabric** | Pattern-based analysis (threat models for risk, summaries for reports) |
+| **BrightData** | Scraping financial sites that block standard fetching |
+| **Art** | Visualizations (portfolio charts, correlation matrices, timelines) |
+| **Createskill** | Used to build the financial skills themselves |
+
+### Integration Implementation
+
+Each financial skill workflow should include integration hooks:
+
+```markdown
+## Workflow: CompanyResearch.md
+
+### Step 1: Define Research Parameters
+- Company name/ticker
+- Research depth (quick/standard/extensive)
+- Specific questions to answer
+
+### Step 2: Invoke Research Skill
+**READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
+**EXECUTE:** Multi-agent parallel research with financial focus
+
+### Step 3: Apply Domain Expertise
+- FundamentalAnalysis interprets financial data
+- SentimentAnalysis scores market perception
+- RiskManagement flags concerns
+
+### Step 4: Synthesize
+- Combine research findings with domain analysis
+- Generate actionable recommendation
+```
+
+### Why This Matters
+
+1. **No Reinventing the Wheel** - Research skill already solves web research
+2. **Leverage Existing Infrastructure** - API keys, rate limiting, caching already configured
+3. **Consistent Experience** - Same research quality across all PAI usage
+4. **Easier Maintenance** - Improvements to research skill benefit financial skills automatically
+5. **Fabric Patterns** - 242+ specialized prompts available without recreation
 
 ---
 
