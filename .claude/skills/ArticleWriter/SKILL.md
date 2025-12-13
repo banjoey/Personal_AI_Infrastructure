@@ -1,20 +1,58 @@
 ---
 name: ArticleWriter
-description: SEO-optimized affiliate article creation with multimedia enrichment. USE WHEN user wants to write articles, create content, add YouTube videos, find product images, or generate affiliate content. Delegates writing to Sonnet for cost efficiency.
+description: SEO-optimized affiliate article creation with multimedia enrichment. USE WHEN user wants to write articles, create blog content, add YouTube videos, find product images, generate affiliate content, OR plan content strategy. Delegates writing to Sonnet for cost efficiency.
 ---
 
-# ArticleWriter Skill
+# ArticleWriter
 
 Creates SEO-optimized affiliate articles with multimedia enrichment. Uses Opus for planning/review and Sonnet for bulk writing to optimize costs.
 
 ## Workflow Routing
 
-| Workflow | Trigger | Description |
-|----------|---------|-------------|
-| PlanArticle | "plan article", "outline content" | Opus creates detailed outline with SEO keywords |
-| WriteArticle | "write article", "create content" | Sonnet writes from outline, Opus reviews |
-| EnrichContent | "add videos", "find images", "enrich article" | Find YouTube reviews, product images |
-| PublishArticle | "publish", "deploy article" | Format, commit, deploy via CI/CD |
+**When executing a workflow, call the notification script via Bash:**
+
+```bash
+${PAI_DIR}/tools/skill-workflow-notification WorkflowName ArticleWriter
+```
+
+| Workflow | Trigger | File |
+|----------|---------|------|
+| **PlanArticle** | "plan article", "outline content", "content strategy" | `workflows/PlanArticle.md` |
+| **WriteArticle** | "write article", "create content", "draft article" | `workflows/WriteArticle.md` |
+| **EnrichContent** | "add videos", "find images", "enrich article" | `workflows/EnrichContent.md` |
+| **PublishArticle** | "publish", "deploy article", "push content" | `workflows/PublishArticle.md` |
+
+## Examples
+
+**Example 1: Plan and write an affiliate article**
+```
+User: "Write an article about USB charger spy cameras for pispycameras.com"
+→ Invokes PlanArticle workflow
+→ Opus researches keywords, creates outline with 7 products
+→ Invokes WriteArticle workflow
+→ Sonnet writes article sections from outline
+→ Opus reviews, adds schema markup
+→ Returns complete article ready for publishing
+```
+
+**Example 2: Enrich existing article with videos**
+```
+User: "Add YouTube review videos to the hidden cameras article"
+→ Invokes EnrichContent workflow
+→ Haiku searches YouTube for "{product name} review 2024"
+→ Filters for views > 10K, duration 5-15 min
+→ Returns list of video IDs with embed code
+```
+
+**Example 3: Publish article to site**
+```
+User: "Publish the USB charger article"
+→ Invokes PublishArticle workflow
+→ Formats article as Astro page
+→ Commits to GitLab repo
+→ CI/CD deploys to Cloudflare Pages
+→ Returns live URL
+```
 
 ## Cost Optimization Strategy
 
@@ -29,82 +67,25 @@ Creates SEO-optimized affiliate articles with multimedia enrichment. Uses Opus f
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  SONNET (Delegated)                          │
-│  - Bulk article writing                                      │
+│                  SONNET (Delegated via Task)                 │
+│  - Bulk article writing (~5x cheaper than Opus)              │
 │  - Product descriptions                                      │
 │  - Section content generation                                │
-│  - First draft creation                                      │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  HAIKU (Quick Tasks)                         │
-│  - YouTube search queries                                    │
-│  - Image URL validation                                      │
-│  - Link checking                                             │
+│  - YouTube search queries (~12x cheaper than Sonnet)         │
+│  - Link validation                                           │
 │  - Simple formatting                                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Multimedia Enrichment
-
-### YouTube Video Discovery
-
-For each product, search YouTube for reviews:
-```
-Search: "{product name} review 2024" OR "{product name} unboxing"
-Filter: Views > 10K, Duration 5-15 min
-Extract: Video ID, title, channel name, view count
-```
-
-**Embedding format:**
-```html
-<iframe
-  width="560" height="315"
-  src="https://www.youtube.com/embed/{VIDEO_ID}"
-  title="{title}"
-  frameborder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowfullscreen>
-</iframe>
-```
-
-### Image Sources
-
-1. **Amazon Product Images** (affiliate compliant)
-   - Use Product Advertising API (when available)
-   - Or link to Amazon product page
-
-2. **Comparison Graphics** (create via tools)
-   - Feature comparison charts
-   - Pros/cons infographics
-
-3. **Stock Photos** (for lifestyle context)
-   - Unsplash (free, attribution optional)
-   - Pexels (free, no attribution)
-
-### Schema Markup (SEO)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "Product Name",
-  "image": "image-url",
-  "description": "...",
-  "review": {
-    "@type": "Review",
-    "reviewRating": {
-      "@type": "Rating",
-      "ratingValue": "4.5",
-      "bestRating": "5"
-    },
-    "author": {
-      "@type": "Organization",
-      "name": "PI Spy Cameras"
-    }
-  }
-}
+**Model selection in Task tool:**
+```typescript
+Task({ prompt: "...", subagent_type: "engineer", model: "sonnet" })  // Writing
+Task({ prompt: "...", subagent_type: "general-purpose", model: "haiku" })  // Quick tasks
 ```
 
 ## Article Template Structure
@@ -115,67 +96,22 @@ Extract: Video ID, title, channel name, view count
 ## Quick Picks (Above the fold)
 - Best Overall: [Product] - $XX
 - Best Budget: [Product] - $XX
-- Best for [Use Case]: [Product] - $XX
 
 ## What to Look For (Buying Guide)
-[Educational content - builds trust, targets informational keywords]
+[Educational content - targets informational keywords]
 
 ## Detailed Reviews
 ### 1. {Product Name} - {Badge}
-[Description, features, pros/cons]
-[YouTube embed if available]
-[Amazon affiliate link]
+[Features, pros/cons, YouTube embed, affiliate link]
 
 ## Comparison Table
 [Side-by-side specs]
-
-## Use Cases
-[Scenario-based recommendations]
 
 ## Legal/Safety Section
 [Required for surveillance products]
 
 ## FAQ (Schema markup for rich snippets)
-[Common questions - target featured snippets]
-
-## Conclusion
-[Summary recommendations with affiliate links]
-```
-
-## Research Services Integration
-
-### Available Now
-- **WebSearch**: Basic web search for products, reviews
-- **perplexity-researcher**: Deep research with citations
-- **gemini-researcher**: Multi-perspective research (if API configured)
-
-### Recommended Additions
-- **YouTube Data API**: Direct video search and metadata
-- **Amazon Product Advertising API**: Official product data, images, prices
-- **SerpAPI or similar**: SERP analysis for SEO optimization
-
-## Usage Example
-
-```
-User: "Write an article about USB charger spy cameras"
-
-Opus (planning):
-1. Research keywords: "usb charger spy camera", "hidden charger camera", etc.
-2. Create outline with 7 products
-3. Define SEO targets
-
-Opus → Sonnet (writing):
-Task(model: "sonnet", prompt: "Write sections based on this outline...")
-
-Sonnet returns draft
-
-Opus → Haiku (enrichment):
-Task(model: "haiku", prompt: "Find YouTube review videos for these products...")
-
-Opus (review):
-- Check quality, accuracy
-- Add schema markup
-- Finalize for publishing
+[Common questions]
 ```
 
 ## Environment Requirements
@@ -187,22 +123,4 @@ ANTHROPIC_API_KEY     # For Sonnet/Haiku delegation
 # Optional - Enhanced Research
 YOUTUBE_API_KEY       # YouTube Data API for video search
 AMAZON_PA_API_KEY     # Product Advertising API
-SERPAPI_KEY           # SERP analysis
-GEMINI_API_KEY        # Gemini research (multi-perspective)
-```
-
-## Site-Specific Configuration
-
-For pispycameras.com:
-```yaml
-affiliate_tag: pispy01-20
-site_name: PI Spy Cameras
-theme: dark
-categories:
-  - clock-cameras
-  - usb-charger-cameras
-  - smoke-detector-cameras
-  - mini-cameras
-  - detection-tools
-legal_disclaimer: required
 ```
