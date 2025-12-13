@@ -21,6 +21,7 @@ ${PAI_DIR}/tools/skill-workflow-notification WorkflowName ArticleWriter
 | **WriteArticle** | "write article", "create content", "draft article" | `workflows/WriteArticle.md` |
 | **EnrichContent** | "add videos", "find images", "enrich article" | `workflows/EnrichContent.md` |
 | **PublishArticle** | "publish", "deploy article", "push content" | `workflows/PublishArticle.md` |
+| **ValidateProducts** | "validate products", "check affiliate links", "product link check" | `workflows/ValidateProducts.md` |
 
 ## Examples
 
@@ -52,6 +53,15 @@ User: "Publish the USB charger article"
 → Commits to GitLab repo
 → CI/CD deploys to Cloudflare Pages
 → Returns live URL
+```
+
+**Example 4: Validate affiliate links**
+```
+User: "Check all my product links are still valid"
+→ Invokes ValidateProducts workflow
+→ Haiku agents check each ASIN in parallel
+→ Reports unavailable/out-of-stock products
+→ Optionally updates lastValidated timestamps
 ```
 
 ## Cost Optimization Strategy
