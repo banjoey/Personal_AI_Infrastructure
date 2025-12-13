@@ -43,12 +43,17 @@ Create minimal files:
 
 ### 2. GitLab CI/CD Configuration
 
-Create `.gitlab-ci.yml`:
+Create `.gitlab-ci.yml` with branch-based deployment strategy:
+
+- `dev` branch → `${PROJECT_NAME}.pages.dev` (staging)
+- `main` branch → custom domain (production)
+- MR branches → preview URLs
 
 ```yaml
 stages:
   - build
   - deploy
+  - post_deploy
 
 variables:
   BUN_VERSION: "1.1.38"
@@ -65,8 +70,10 @@ build:
     expire_in: 1 hour
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
+# PRODUCTION: main branch -> custom domain
 deploy_production:
   stage: deploy
   image: node:20-alpine
@@ -78,10 +85,27 @@ deploy_production:
     - wrangler pages deploy dist --project-name=${PROJECT_NAME} --branch=main
   environment:
     name: production
-    url: https://${PROJECT_NAME}.pages.dev
+    url: https://${CUSTOM_DOMAIN}
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
+# STAGING: dev branch -> pages.dev subdomain
+deploy_staging:
+  stage: deploy
+  image: node:20-alpine
+  dependencies:
+    - build
+  before_script:
+    - npm install -g wrangler
+  script:
+    - wrangler pages deploy dist --project-name=${PROJECT_NAME} --branch=dev
+  environment:
+    name: staging
+    url: https://${PROJECT_NAME}.pages.dev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+
+# PREVIEW: MR branches -> preview URLs
 deploy_preview:
   stage: deploy
   image: node:20-alpine
@@ -96,7 +120,35 @@ deploy_preview:
     url: https://$CI_COMMIT_REF_SLUG.${PROJECT_NAME}.pages.dev
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Purge cache on production deploy (requires CLOUDFLARE_ZONE_ID)
+purge_cache:
+  stage: post_deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      if [ -z "${CLOUDFLARE_ZONE_ID}" ]; then
+        echo "CLOUDFLARE_ZONE_ID not set - skipping cache purge"
+        exit 0
+      fi
+      curl -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+        -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+        -H "Content-Type: application/json" \
+        --data '{"purge_everything":true}'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - deploy_production
 ```
+
+**Branch Strategy:**
+| Branch | Deploys To | Use Case |
+|--------|------------|----------|
+| `dev` | pages.dev subdomain | Preview/staging |
+| `main` | Custom domain | Production |
+| MR branches | branch.pages.dev | PR previews |
 
 ### 3. Initialize Git Repository
 
