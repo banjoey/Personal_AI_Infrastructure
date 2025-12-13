@@ -17,6 +17,7 @@ This skill composes foundational skills:
 
 | Workflow | Trigger | Description |
 |----------|---------|-------------|
+| [NewSiteProject](workflows/NewSiteProject.md) | "new website", "create a site", "cloudflare pages project" | Create new site with GitLab CI → Cloudflare Pages |
 | [QuarterlyPlan](workflows/QuarterlyPlan.md) | "plan content", "content calendar", "quarterly planning" | Create 90-day content roadmap |
 | [CreateArticle](workflows/CreateArticle.md) | "write article", "create blog post", "new content" | Research, write, and optimize articles |
 | [ScheduledPublishing](workflows/ScheduledPublishing.md) | "schedule post", "publish later", "automate publishing" | Set up GitLab CI for timed releases |
