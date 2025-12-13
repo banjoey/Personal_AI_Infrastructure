@@ -33,17 +33,64 @@ Task({
 - Prefer unsponsored reviews
 - Match product exactly (not generic category)
 
-### 2. Product Image Sources
+### 2. Amazon Product Images
 
-Find product images in this priority order:
-1. **Amazon Product Images** - Via Product Advertising API (if available)
-2. **Manufacturer Press Kit** - High-res official images
-3. **Placeholder with Alt Text** - If no images found
+As an Amazon Associate, you can use Amazon product images with these rules:
+- **Must link to Amazon** - Image must be wrapped in affiliate link
+- **No modifications** - No cropping, watermarks, or alterations
+- **Hotlink from Amazon CDN** - Don't download/rehost images
 
-Image requirements:
-- Minimum 800px width
-- WebP format preferred
-- Descriptive alt text for SEO
+**Method A: Direct ASIN Image URL (Simple)**
+
+Amazon provides predictable image URLs based on ASIN:
+```
+https://m.media-amazon.com/images/I/{IMAGE_ID}._AC_SL1500_.jpg
+```
+
+To get the IMAGE_ID, scrape the product page or use PA-API.
+
+**Method B: Product Advertising API (Official)**
+
+If `AMAZON_PA_API_KEY` is configured:
+```bash
+# PA-API returns image URLs in response
+curl -X POST "https://webservices.amazon.com/paapi5/getitems" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ItemIds": ["{ASIN}"],
+    "Resources": ["Images.Primary.Large", "Images.Variants.Large"]
+  }'
+```
+
+**Method C: Fallback - Product Page Scrape (Haiku)**
+
+```
+Task({
+  prompt: "Fetch Amazon product page for ASIN {asin}.
+           Extract the main product image URL from og:image meta tag.
+           Return the full image URL.",
+  subagent_type: "general-purpose",
+  model: "haiku"
+})
+```
+
+**Image Component Usage:**
+```astro
+<a href="https://amazon.com/dp/{ASIN}?tag=pispy01-20">
+  <img
+    src="{amazon_image_url}"
+    alt="{product_name}"
+    loading="lazy"
+    class="product-image"
+  />
+</a>
+```
+
+**Compliance Notes:**
+- Images MUST link to Amazon (Associates requirement)
+- Don't cache images locally - always hotlink
+- Include affiliate tag in all image links
+- Alt text should describe the product for SEO
 
 ### 3. Schema Markup Generation
 
