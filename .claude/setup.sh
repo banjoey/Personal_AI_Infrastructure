@@ -8,7 +8,7 @@
 # It's designed to be friendly, informative, and safe.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/banjoey/Personal_AI_Infrastructure/joey-all/.claude/setup.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/banjoey/Personal_AI_Infrastructure/merlin-all/.claude/setup.sh | bash
 #
 # Or download and run manually:
 #   ./setup.sh
@@ -20,7 +20,7 @@
 # ============================================
 # Each branch should set these to match its identity
 PAI_REPO="https://github.com/banjoey/Personal_AI_Infrastructure.git"
-PAI_BRANCH="joey-all"
+PAI_BRANCH="merlin-all"
 # ============================================
 
 set -e  # Exit on error
@@ -822,32 +822,46 @@ if ask_yes_no "Are you using Claude Code?"; then
     cp "$PAI_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
 
     # Now personalize the COPY with user values (never touch PAI repo)
-    # PAI_DIR must point to ~/.claude (runtime location) not the repo (source location)
-    # This way hooks write history to ~/.claude/history/ (local) not into the repo
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' \
-            -e "s|/Users/YOURNAME/.claude|$HOME/.claude|g" \
-            -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure/.claude|$HOME/.claude|g" \
-            -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
-            -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
-            -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
-            -e "s|\"ASSISTANT_NAME\": \"Kai\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-            -e "s|\"ASSISTANT_NAME\": \"Charles\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-            -e "s|\"USER_NAME\": \"User\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-            -e "s|\"USER_NAME\": \"Joey\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-            "$HOME/.claude/settings.json"
+    # PAI_DIR in settings.json must point to ~/PAI/.claude (repo + .claude) so hooks can find files
+    SETTINGS_PAI_DIR="$PAI_DIR/.claude"
+
+    if command_exists jq; then
+        # Use jq for reliable JSON manipulation (preferred)
+        jq --arg pai_dir "$SETTINGS_PAI_DIR" \
+           --arg ai_name "$AI_NAME" \
+           --arg user_name "$USER_NAME" \
+           '.env.PAI_DIR = $pai_dir | .env.DA = $ai_name | .env.ASSISTANT_NAME = $ai_name | .env.USER_NAME = $user_name' \
+           "$HOME/.claude/settings.json" > "$HOME/.claude/settings.json.tmp"
+        mv "$HOME/.claude/settings.json.tmp" "$HOME/.claude/settings.json"
+        print_info "Configured settings.json with jq (PAI_DIR=$SETTINGS_PAI_DIR)"
     else
-        sed -i \
-            -e "s|/Users/YOURNAME/.claude|$HOME/.claude|g" \
-            -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure/.claude|$HOME/.claude|g" \
-            -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
-            -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
-            -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
-            -e "s|\"ASSISTANT_NAME\": \"Kai\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-            -e "s|\"ASSISTANT_NAME\": \"Charles\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-            -e "s|\"USER_NAME\": \"User\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-            -e "s|\"USER_NAME\": \"Joey\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-            "$HOME/.claude/settings.json"
+        # Fallback to sed (less reliable but works without jq)
+        print_warning "jq not found - using sed fallback (install jq for better reliability)"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' \
+                -e "s|/Users/YOURNAME/.claude|$SETTINGS_PAI_DIR|g" \
+                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure/.claude|$SETTINGS_PAI_DIR|g" \
+                -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
+                -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
+                -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
+                -e "s|\"ASSISTANT_NAME\": \"Kai\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
+                -e "s|\"ASSISTANT_NAME\": \"Charles\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
+                -e "s|\"USER_NAME\": \"User\"|\"USER_NAME\": \"$USER_NAME\"|g" \
+                -e "s|\"USER_NAME\": \"Joey\"|\"USER_NAME\": \"$USER_NAME\"|g" \
+                "$HOME/.claude/settings.json"
+        else
+            sed -i \
+                -e "s|/Users/YOURNAME/.claude|$SETTINGS_PAI_DIR|g" \
+                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure/.claude|$SETTINGS_PAI_DIR|g" \
+                -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
+                -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
+                -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
+                -e "s|\"ASSISTANT_NAME\": \"Kai\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
+                -e "s|\"ASSISTANT_NAME\": \"Charles\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
+                -e "s|\"USER_NAME\": \"User\"|\"USER_NAME\": \"$USER_NAME\"|g" \
+                -e "s|\"USER_NAME\": \"Joey\"|\"USER_NAME\": \"$USER_NAME\"|g" \
+                "$HOME/.claude/settings.json"
+        fi
     fi
 
     # Check if user has existing settings with customizations to preserve
