@@ -576,8 +576,9 @@ async function main() {
   }
 
   // Context save on exit (based on pai-config.json settings)
+  // Checks project-level config first, then falls back to global
   try {
-    const contextDecision = shouldSaveContext();
+    const contextDecision = shouldSaveContext(sessionCwd);
     if (contextDecision.save) {
       console.error(`📄 Context save: ${contextDecision.prompt ? 'prompted' : 'auto-saving'}...`);
 

@@ -18,7 +18,8 @@
 
 # Use PAI_DIR from environment or default
 PAI_DIR="${PAI_DIR:-$HOME/.claude}"
-PAI_CONFIG="$HOME/.claude/pai-config.json"
+GLOBAL_PAI_CONFIG="$HOME/.claude/pai-config.json"
+# Project-level config can override global (checked in get_config)
 
 # Colors
 GREEN='\033[0;32m'
@@ -33,23 +34,37 @@ log_warn() { echo -e "  ${YELLOW}⚠${NC} $1"; }
 log_context() { echo -e "  ${CYAN}📄${NC} $1"; }
 
 # Get config value with default
+# Checks project-level config first (.claude/pai-config.json), falls back to global
 get_config() {
     local key="$1"
     local default="$2"
-
-    if [[ ! -f "$PAI_CONFIG" ]]; then
-        echo "$default"
-        return
-    fi
+    local cwd="$(pwd)"
 
     if ! command -v jq &> /dev/null; then
         echo "$default"
         return
     fi
 
-    local value
-    value=$(jq -r "$key // empty" "$PAI_CONFIG" 2>/dev/null)
-    echo "${value:-$default}"
+    local value=""
+
+    # Check project-level config first (in .claude/ subdirectory)
+    local project_config="$cwd/.claude/pai-config.json"
+    if [[ -f "$project_config" ]]; then
+        value=$(jq -r "$key // empty" "$project_config" 2>/dev/null)
+        if [[ -n "$value" ]]; then
+            echo "$value"
+            return
+        fi
+    fi
+
+    # Fall back to global config
+    if [[ -f "$GLOBAL_PAI_CONFIG" ]]; then
+        value=$(jq -r "$key // empty" "$GLOBAL_PAI_CONFIG" 2>/dev/null)
+        echo "${value:-$default}"
+        return
+    fi
+
+    echo "$default"
 }
 
 # Find context file in current directory

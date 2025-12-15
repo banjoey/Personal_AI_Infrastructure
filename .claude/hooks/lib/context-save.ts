@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { homedir } from 'os';
 
-const PAI_CONFIG_PATH = join(homedir(), '.claude', 'pai-config.json');
+const GLOBAL_PAI_CONFIG_PATH = join(homedir(), '.claude', 'pai-config.json');
 
 interface ContextConfig {
   onLoad: 'auto-load' | 'notify' | 'none';
@@ -32,19 +32,35 @@ interface PaiConfig {
 
 /**
  * Get context configuration from pai-config.json
+ * Checks project-level config first (.claude/pai-config.json), falls back to global
  */
-export function getContextConfig(): ContextConfig {
+export function getContextConfig(cwd?: string): ContextConfig {
   const defaults: ContextConfig = {
     onLoad: 'auto-load',
     onExit: 'none'
   };
 
+  const projectCwd = cwd || process.cwd();
+
   try {
-    if (!existsSync(PAI_CONFIG_PATH)) {
+    // Check project-level config first
+    const projectConfigPath = join(projectCwd, '.claude', 'pai-config.json');
+    if (existsSync(projectConfigPath)) {
+      const projectConfig: PaiConfig = JSON.parse(readFileSync(projectConfigPath, 'utf-8'));
+      if (projectConfig.context) {
+        return {
+          onLoad: projectConfig.context.onLoad || defaults.onLoad,
+          onExit: projectConfig.context.onExit || defaults.onExit
+        };
+      }
+    }
+
+    // Fall back to global config
+    if (!existsSync(GLOBAL_PAI_CONFIG_PATH)) {
       return defaults;
     }
 
-    const config: PaiConfig = JSON.parse(readFileSync(PAI_CONFIG_PATH, 'utf-8'));
+    const config: PaiConfig = JSON.parse(readFileSync(GLOBAL_PAI_CONFIG_PATH, 'utf-8'));
     return {
       onLoad: config.context?.onLoad || defaults.onLoad,
       onExit: config.context?.onExit || defaults.onExit
@@ -170,9 +186,10 @@ export function saveContext(cwd: string, sessionSummary: string): { saved: boole
 
 /**
  * Check if context should be saved based on config
+ * Accepts optional cwd to check project-level config
  */
-export function shouldSaveContext(): { save: boolean; prompt: boolean } {
-  const config = getContextConfig();
+export function shouldSaveContext(cwd?: string): { save: boolean; prompt: boolean } {
+  const config = getContextConfig(cwd);
 
   switch (config.onExit) {
     case 'auto-save':

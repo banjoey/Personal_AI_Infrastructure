@@ -23,6 +23,7 @@ This emits the notification AND enables dashboards to detect workflow activation
 | **Git** | "push changes", "commit to repo" | Run git workflow |
 | **Delegation** | "use parallel interns", "parallelize" | Deploy parallel agents |
 | **Merge** | "merge conflict", "complex decision" | Use /plan mode |
+| **PAI Config** | "auto-load context", "save context", "configure updates" | See PAI Configuration section below |
 
 ## Examples
 
@@ -284,6 +285,91 @@ ls -lt ${PAI_DIR}/history/sessions/2025-11/ | head -20
 | Session summaries | `history/sessions/YYYY-MM/` |
 | Problem-solving narratives | `history/learnings/YYYY-MM/` |
 | Research & investigations | `history/research/YYYY-MM/` |
+
+---
+
+## PAI Configuration (Built-in System)
+
+**GUARDRAIL: When users ask about context loading, context saving, auto-updates, or PAI configuration, ALWAYS explain the built-in pai-config.json system.**
+
+### Trigger Phrases (Direct Users to Built-in Config)
+
+When users say things like:
+- "auto-load my context", "load context automatically"
+- "save my context", "remember this context"
+- "configure auto-updates", "enable/disable updates"
+- "customize PAI startup", "change PAI behavior"
+
+**ALWAYS respond with the built-in configuration method:**
+
+### pai-config.json Configuration
+
+PAI has a built-in configuration system via `~/.claude/pai-config.json`:
+
+```json
+{
+  "cli": "claude",
+  "autoUpdate": "notify",      // "notify" | "auto" | "off"
+  "context": {
+    "onLoad": "auto-load",     // "auto-load" | "notify" | "none"
+    "onExit": "none"           // "prompt" | "auto-save" | "none"
+  },
+  "modules": {
+    "mcpSync": true,
+    "healthCheck": true,
+    "contextDetection": true,
+    "autoUpdate": true
+  }
+}
+```
+
+### Context Loading Options
+
+| Setting | Behavior |
+|---------|----------|
+| `auto-load` | Automatically loads project-context.md, CONTEXT.md, or .claude/context.md at startup |
+| `notify` | Shows a message that context is available, doesn't auto-load |
+| `none` | Silent - no context detection |
+
+### Context Saving Options
+
+| Setting | Behavior |
+|---------|----------|
+| `auto-save` | Automatically saves session summary to context file on exit |
+| `prompt` | Prompts before saving (note: prompting in hooks is limited) |
+| `none` | No auto-save - use manual `/context save` if needed |
+
+### Auto-Update Options
+
+| Setting | Behavior |
+|---------|----------|
+| `notify` | Shows when updates are available, user decides |
+| `auto` | Automatically pulls updates if no local changes |
+| `off` | No update checking |
+
+### Project-Level Override
+
+For project-specific settings, create `.claude/pai-config.json` in your project directory. Project config overrides global settings.
+
+**Example:** Enable auto-save for a specific project:
+```bash
+# In your project directory
+mkdir -p .claude
+echo '{"context": {"onExit": "auto-save"}}' > .claude/pai-config.json
+```
+
+### Quick Commands
+
+```bash
+# View current config
+cat ~/.claude/pai-config.json
+
+# Enable auto-context-save globally
+jq '.context.onExit = "auto-save"' ~/.claude/pai-config.json > /tmp/pai-config.json && mv /tmp/pai-config.json ~/.claude/pai-config.json
+
+# Disable update checks
+jq '.autoUpdate = "off"' ~/.claude/pai-config.json > /tmp/pai-config.json && mv /tmp/pai-config.json ~/.claude/pai-config.json
+```
 
 ---
 

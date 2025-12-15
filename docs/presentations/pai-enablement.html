@@ -26,6 +26,11 @@
             text-transform: none;
             color: #42affa;
         }
+        .reveal h4 {
+            font-size: 1.1em;
+            text-transform: none;
+            color: #88c0d0;
+        }
         .reveal ul {
             font-size: 0.9em;
         }
@@ -50,6 +55,13 @@
         .two-column > div {
             flex: 1;
         }
+        .three-column {
+            display: flex;
+            gap: 1.5em;
+        }
+        .three-column > div {
+            flex: 1;
+        }
         .highlight-box {
             background: rgba(66, 175, 250, 0.1);
             border-left: 4px solid #42affa;
@@ -65,10 +77,84 @@
             font-weight: bold;
             margin-left: 1em;
         }
+        .deep-dive-badge {
+            background: #5e81ac;
+            color: white;
+            padding: 0.3em 0.6em;
+            border-radius: 5px;
+            font-size: 0.5em;
+            font-weight: bold;
+            margin-left: 0.5em;
+            vertical-align: middle;
+        }
         .vs-symbol {
             color: #ff6b6b;
             font-size: 2em;
             font-weight: bold;
+        }
+        .arch-box {
+            background: rgba(94, 129, 172, 0.2);
+            border: 2px solid #5e81ac;
+            border-radius: 10px;
+            padding: 1em;
+            margin: 0.5em;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .arch-box:hover {
+            background: rgba(94, 129, 172, 0.4);
+            transform: scale(1.02);
+        }
+        .arch-box h4 {
+            margin: 0 0 0.5em 0;
+            color: #88c0d0;
+        }
+        .arch-box p {
+            margin: 0;
+            font-size: 0.7em;
+            color: #d8dee9;
+        }
+        .arch-connector {
+            color: #5e81ac;
+            font-size: 2em;
+            margin: 0.2em 0;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1em;
+            margin-top: 1em;
+        }
+        .feature-item {
+            background: rgba(136, 192, 208, 0.1);
+            border-radius: 8px;
+            padding: 0.8em;
+            border-left: 3px solid #88c0d0;
+        }
+        .feature-item h5 {
+            margin: 0 0 0.3em 0;
+            color: #88c0d0;
+            font-size: 0.9em;
+        }
+        .feature-item p {
+            margin: 0;
+            font-size: 0.7em;
+            color: #d8dee9;
+        }
+        .depth-indicator {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.6em;
+            color: #5e81ac;
+            opacity: 0.7;
+        }
+        .click-hint {
+            font-size: 0.6em;
+            color: #88c0d0;
+            margin-top: 1em;
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -142,10 +228,26 @@
                 </section>
 
                 <section>
+                    <h3>Intelligent Startup System</h3>
+                    <div class="highlight-box">
+                        <p><strong>PAI does the work before you even ask</strong></p>
+                        <ul>
+                            <li><strong>Auto-updates:</strong> Checks for PAI updates automatically</li>
+                            <li><strong>Context loading:</strong> Loads project context at startup</li>
+                            <li><strong>Health checks:</strong> Validates your setup is working</li>
+                            <li><strong>MCP sync:</strong> Ensures tool configurations are current</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        PAI is intelligent from the moment you launch it. It automatically checks for updates to keep you current. It loads project context so it knows what you're working on. It runs health checks to validate your environment. It syncs MCP tool configurations so everything works seamlessly. All this happens before you type your first command.
+                    </aside>
+                </section>
+
+                <section>
                     <h3>The Core Difference</h3>
                     <div style="text-align: center; font-size: 1.2em; margin-top: 2em;">
                         <p><strong>Generic AI:</strong> "What can I do for you?"</p>
-                        <p class="vs-symbol">↓</p>
+                        <p class="vs-symbol">&#8595;</p>
                         <p><strong>Your PAI:</strong> "I know your infrastructure, your preferences, your workflows - what are we building today?"</p>
                     </div>
                     <aside class="notes">
@@ -157,7 +259,7 @@
                     <h3>Foundational Vision</h3>
                     <blockquote style="font-size: 0.8em;">
                         "The orchestration and scaffolding are far more important than the model's intelligence."
-                        <footer>— Daniel Miessler</footer>
+                        <footer>- Daniel Miessler</footer>
                     </blockquote>
                     <p style="margin-top: 1em;">System architecture > Raw AI power</p>
                     <aside class="notes">
@@ -166,99 +268,336 @@
                 </section>
             </section>
 
-            <!-- Section 2: Architecture Overview -->
+            <!-- Section 2: Architecture Deep Dive (CLICKABLE) -->
             <section>
                 <section>
-                    <h2>Architecture Overview</h2>
-                    <p>The Three Core Primitives</p>
+                    <h2>Architecture Overview<span class="deep-dive-badge">CLICK TO EXPLORE</span></h2>
+                    <p>Navigate down to explore each layer</p>
+
+                    <!-- High-level architecture diagram -->
+                    <div style="margin-top: 1em;">
+                        <div class="arch-box" style="max-width: 400px; margin: 0 auto;">
+                            <h4>PAI System</h4>
+                            <p>Your Personal AI Infrastructure</p>
+                        </div>
+                        <div class="arch-connector">&#8595;</div>
+                        <div class="three-column" style="max-width: 900px; margin: 0 auto;">
+                            <div class="arch-box">
+                                <h4>Skills</h4>
+                                <p>Domain expertise</p>
+                            </div>
+                            <div class="arch-box">
+                                <h4>Agents</h4>
+                                <p>Specialized personas</p>
+                            </div>
+                            <div class="arch-box">
+                                <h4>Hooks</h4>
+                                <p>Event automation</p>
+                            </div>
+                        </div>
+                        <div class="arch-connector">&#8595;</div>
+                        <div class="arch-box" style="max-width: 600px; margin: 0 auto;">
+                            <h4>Modular Launcher</h4>
+                            <p>Pre-startup modules: Updates, Context, Health, MCP</p>
+                        </div>
+                    </div>
+                    <p class="click-hint">Press DOWN ARROW to dive into each component</p>
                     <aside class="notes">
-                        Now let's understand how PAI is actually built. The architecture is based on three core primitives that work together: Skills, Agents, and Hooks.
+                        This is the high-level architecture. PAI is built on three core primitives - Skills, Agents, and Hooks - all orchestrated by a modular launcher that handles setup before your session even starts. Press down to explore each layer in detail.
                     </aside>
                 </section>
 
+                <!-- DEPTH 1: Skills Deep Dive -->
                 <section>
-                    <h3>Primitive 1: Skills</h3>
+                    <h3>Primitive 1: Skills<span class="deep-dive-badge">DEPTH 1</span></h3>
                     <p>Self-contained AI capabilities with automatic routing</p>
-                    <pre><code class="language-yaml">description: |
-  Security engineering skill for threat modeling and compliance.
 
-  USE WHEN user mentions 'threat model', 'CMMC',
-  'security requirements', 'vulnerability analysis'</code></pre>
-                    <div class="highlight-box">
-                        <strong>Automatic activation</strong> based on your request
+                    <div class="two-column" style="margin-top: 1em;">
+                        <div>
+                            <div class="arch-box">
+                                <h4>Structure</h4>
+                                <p>SKILL.md + workflows</p>
+                            </div>
+                            <div class="arch-box">
+                                <h4>Routing</h4>
+                                <p>USE WHEN triggers</p>
+                            </div>
+                        </div>
+                        <div>
+                            <pre><code class="language-yaml">description: |
+  Security engineering skill.
+
+  USE WHEN user mentions
+  'threat model', 'CMMC',
+  'vulnerability analysis'</code></pre>
+                        </div>
+                    </div>
+                    <p class="click-hint">Press DOWN for skill internals</p>
+                    <aside class="notes">
+                        Skills are self-contained packages with automatic routing. Each skill has a SKILL.md that defines its capabilities and USE WHEN clauses that trigger automatic activation. Mention "threat modeling" and the Security skill loads automatically.
+                    </aside>
+                </section>
+
+                <!-- DEPTH 2: Skills Internals -->
+                <section>
+                    <h3>Skill Internals<span class="deep-dive-badge">DEPTH 2</span></h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h5>SKILL.md</h5>
+                            <p>Entry point with frontmatter metadata, USE WHEN triggers, and workflow definitions</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>Workflows</h5>
+                            <p>Step-by-step procedures for common tasks within the skill's domain</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>Reference Files</h5>
+                            <p>Supporting documentation loaded just-in-time when needed</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>Tool Integration</h5>
+                            <p>MCP servers, APIs, and external services specific to the skill</p>
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="margin-top: 1em;">
+                        <p><strong>Progressive Disclosure:</strong> Only load what's needed, when it's needed</p>
                     </div>
                     <aside class="notes">
-                        Skills are self-contained packages of domain expertise. Each skill has a USE WHEN clause that automatically activates it based on your request. For example, mention "threat modeling" and the Security skill loads. You have skills for Research, Finance, AgilePm, ArticleWriter - each containing specialized workflows and knowledge.
+                        Inside each skill: SKILL.md is the entry point with metadata and triggers. Workflows define step-by-step procedures. Reference files provide deep documentation loaded just-in-time. Tool integration connects MCPs and APIs. Progressive disclosure keeps context windows efficient.
                     </aside>
                 </section>
 
+                <!-- DEPTH 1: Agents Deep Dive -->
                 <section>
-                    <h3>Example Skills</h3>
-                    <ul>
-                        <li><strong>Security:</strong> Threat modeling, CMMC compliance, vulnerability analysis</li>
-                        <li><strong>Research:</strong> Multi-source comparative analysis with Gemini/Perplexity</li>
-                        <li><strong>Standup:</strong> Multi-agent collaborative decision-making</li>
-                        <li><strong>AgilePm:</strong> PRD creation, epic decomposition, sprint planning</li>
-                        <li><strong>Finance:</strong> Portfolio analysis, tax strategy, retirement planning</li>
-                    </ul>
-                    <aside class="notes">
-                        Here are some real skills in action: Security skill handles threat modeling and compliance frameworks. Research skill orchestrates multiple AI models for comparative analysis. Standup skill runs multi-agent discussions. AgilePm generates PRDs and user stories. Finance skill handles investment analysis. Each skill is a complete domain expert.
-                    </aside>
-                </section>
-
-                <section>
-                    <h3>Primitive 2: Agents</h3>
+                    <h3>Primitive 2: Agents<span class="deep-dive-badge">DEPTH 1</span></h3>
                     <p>Specialized AI personas for task delegation</p>
+
+                    <div class="three-column" style="margin-top: 1em;">
+                        <div>
+                            <div class="arch-box">
+                                <h4>architect</h4>
+                                <p>System design</p>
+                            </div>
+                            <div class="arch-box">
+                                <h4>engineer</h4>
+                                <p>Implementation</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="arch-box">
+                                <h4>researcher</h4>
+                                <p>Investigation</p>
+                            </div>
+                            <div class="arch-box">
+                                <h4>pentester</h4>
+                                <p>Security testing</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="arch-box">
+                                <h4>intern</h4>
+                                <p>Parallel grunt work</p>
+                            </div>
+                            <div class="arch-box">
+                                <h4>designer</h4>
+                                <p>UX/UI design</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="click-hint">Press DOWN for agent configuration</p>
+                    <aside class="notes">
+                        Agents are specialized personas you delegate tasks to. Architect for system design, engineer for implementation, researcher for investigation, pentester for security, intern for parallel grunt work, designer for UX. Each has specific capabilities and voice.
+                    </aside>
+                </section>
+
+                <!-- DEPTH 2: Agent Configuration -->
+                <section>
+                    <h3>Agent Configuration<span class="deep-dive-badge">DEPTH 2</span></h3>
                     <div class="two-column">
                         <div>
-                            <h4>Development Team</h4>
+                            <h4>Model Selection</h4>
                             <ul style="font-size: 0.8em;">
-                                <li><code>architect</code></li>
-                                <li><code>engineer</code></li>
-                                <li><code>designer</code></li>
-                                <li><code>pentester</code></li>
+                                <li><code>opus</code> - Deep reasoning</li>
+                                <li><code>sonnet</code> - Standard tasks</li>
+                                <li><code>haiku</code> - Fast grunt work</li>
+                            </ul>
+                            <div class="highlight-box" style="font-size: 0.7em;">
+                                <p><strong>Rule:</strong> Grunt work = haiku (10-20x faster)</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Agent Definition</h4>
+                            <pre><code class="language-yaml">pentester:
+  description: |
+    Security testing expert.
+    USE WHEN pen testing,
+    vulnerability scanning
+  model: sonnet
+  voice_id: oliver-uk</code></pre>
+                        </div>
+                    </div>
+                    <aside class="notes">
+                        Agents are configured with model selection - opus for deep reasoning, sonnet for standard tasks, haiku for fast grunt work. Each agent has a description, USE WHEN triggers, model preference, and voice ID for audio feedback. The rule of thumb: grunt work uses haiku for 10-20x speed improvement.
+                    </aside>
+                </section>
+
+                <!-- DEPTH 1: Hooks Deep Dive -->
+                <section>
+                    <h3>Primitive 3: Hooks<span class="deep-dive-badge">DEPTH 1</span></h3>
+                    <p>Event-driven automation</p>
+
+                    <div class="three-column" style="margin-top: 1em;">
+                        <div class="arch-box">
+                            <h4>start-hook</h4>
+                            <p>Session initialization</p>
+                        </div>
+                        <div class="arch-box">
+                            <h4>stop-hook</h4>
+                            <p>Completion handling</p>
+                        </div>
+                        <div class="arch-box">
+                            <h4>tool-hook</h4>
+                            <p>Action logging</p>
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="margin-top: 1em;">
+                        <p>Hooks run automatically - no manual intervention required</p>
+                    </div>
+                    <p class="click-hint">Press DOWN for hook internals</p>
+                    <aside class="notes">
+                        Hooks provide event-driven automation. Start-hook initializes sessions with context. Stop-hook handles completion with voice notifications and context saving. Tool-hook logs every action for observability. All automatic, no manual intervention.
+                    </aside>
+                </section>
+
+                <!-- DEPTH 2: Hook Internals -->
+                <section>
+                    <h3>Hook Internals<span class="deep-dive-badge">DEPTH 2</span></h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h5>start-hook.ts</h5>
+                            <p>Loads CORE skill, injects session context, sets up environment variables</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>stop-hook.ts</h5>
+                            <p>Extracts COMPLETED message, triggers voice notification, saves context</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>tool-hook.ts</h5>
+                            <p>Logs tool usage to observability dashboard, tracks agent activity</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>Context Save</h5>
+                            <p>Auto-saves project context on exit (configurable per-project)</p>
+                        </div>
+                    </div>
+                    <aside class="notes">
+                        Hook internals: start-hook loads the CORE skill and injects session context. stop-hook extracts completion messages for voice and saves context. tool-hook logs everything for dashboards. Context save can be configured per-project to auto-save or prompt.
+                    </aside>
+                </section>
+
+                <!-- DEPTH 1: Modular Launcher -->
+                <section>
+                    <h3>Modular Launcher System<span class="deep-dive-badge">DEPTH 1</span></h3>
+                    <p>Pre-startup orchestration</p>
+
+                    <div style="margin-top: 1em;">
+                        <div class="arch-box" style="max-width: 300px; margin: 0 auto;">
+                            <h4>pai-launch.sh</h4>
+                            <p>Main launcher</p>
+                        </div>
+                        <div class="arch-connector">&#8595;</div>
+                        <div class="feature-grid" style="max-width: 800px; margin: 0 auto;">
+                            <div class="feature-item">
+                                <h5>01-mcp-sync</h5>
+                                <p>Sync MCP configs</p>
+                            </div>
+                            <div class="feature-item">
+                                <h5>02-health-check</h5>
+                                <p>Validate setup</p>
+                            </div>
+                            <div class="feature-item">
+                                <h5>03-context-detection</h5>
+                                <p>Load project context</p>
+                            </div>
+                            <div class="feature-item">
+                                <h5>04-auto-update</h5>
+                                <p>Check for updates</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="click-hint">Press DOWN for module details</p>
+                    <aside class="notes">
+                        The modular launcher runs pre-startup checks in numbered order. MCP sync ensures tool configs are current. Health check validates your setup. Context detection loads project-specific context. Auto-update checks for PAI updates. All modular and extensible.
+                    </aside>
+                </section>
+
+                <!-- DEPTH 2: Launcher Module Details -->
+                <section>
+                    <h3>Launcher Modules<span class="deep-dive-badge">DEPTH 2</span></h3>
+                    <div class="two-column">
+                        <div>
+                            <h4>Module Behaviors</h4>
+                            <ul style="font-size: 0.75em;">
+                                <li><strong>MCP Sync:</strong> Global config wins, project-only preserved</li>
+                                <li><strong>Health Check:</strong> Warns but doesn't block</li>
+                                <li><strong>Context:</strong> auto-load / notify / none</li>
+                                <li><strong>Updates:</strong> notify / auto / off</li>
                             </ul>
                         </div>
                         <div>
-                            <h4>Research Team</h4>
-                            <ul style="font-size: 0.8em;">
-                                <li><code>intern</code> (generalist)</li>
-                                <li><code>claude-researcher</code></li>
-                                <li><code>gemini-researcher</code></li>
-                                <li><code>perplexity-researcher</code></li>
-                            </ul>
+                            <h4>Configuration</h4>
+                            <pre><code class="language-json">{
+  "cli": "claude",
+  "autoUpdate": "notify",
+  "context": {
+    "onLoad": "auto-load",
+    "onExit": "none"
+  }
+}</code></pre>
+                            <p style="font-size: 0.7em; color: #88c0d0;">pai-config.json</p>
                         </div>
                     </div>
+                    <div class="highlight-box" style="margin-top: 0.5em; font-size: 0.8em;">
+                        <p><strong>Project Override:</strong> Place pai-config.json in project .claude/ folder to customize per-project</p>
+                    </div>
                     <aside class="notes">
-                        Agents are specialized personas you delegate to. Your development team includes architect for system design, engineer for implementation, designer for UX, pentester for security testing. Research team has intern for general tasks, and specialized researchers using Claude, Gemini, or Perplexity. Each has their own voice ID and expertise.
+                        Module behaviors are configurable. MCP sync uses global-wins strategy. Health check warns but doesn't block startup. Context can auto-load, notify, or stay silent. Updates can notify, auto-pull, or disable. Configuration lives in pai-config.json, and you can override per-project by placing one in your project's .claude folder.
                     </aside>
                 </section>
 
+                <!-- DEPTH 3: File System Layout -->
                 <section>
-                    <h3>Primitive 3: Hooks</h3>
-                    <p>Event-driven automation</p>
-                    <div class="highlight-box">
-                        <ul>
-                            <li><strong>start-hook:</strong> Auto-loads context at session start</li>
-                            <li><strong>stop-hook:</strong> Captures completion, triggers voice notification</li>
-                            <li><strong>tool-hook:</strong> Logs every tool usage for observability</li>
-                        </ul>
-                    </div>
-                    <aside class="notes">
-                        Hooks are event-driven automation. Start-hook automatically loads your context when a session begins. Stop-hook captures completion messages and triggers voice notifications so you HEAR when tasks complete. Tool-hook logs everything for observability dashboards. This is infrastructure that runs automatically without you asking.
-                    </aside>
-                </section>
+                    <h3>File System Layout<span class="deep-dive-badge">DEPTH 3</span></h3>
+                    <pre style="font-size: 0.5em;"><code>~/.claude/                          # User's PAI installation
+├── settings.json                   # Claude Code settings (personalized copy)
+├── pai-config.json                 # Launcher configuration
+├── skills/ -> ~/PAI/.claude/skills # Symlink to repo
+├── hooks/ -> ~/PAI/.claude/hooks   # Symlink to repo
+├── scripts/ -> ~/PAI/.claude/scripts # Symlink to repo
+├── history/                        # LOCAL - session history
+│   ├── sessions/                   # Per-session transcripts
+│   └── learnings/                  # Captured knowledge
+└── scratchpad/                     # LOCAL - temporary files
 
-                <section>
-                    <h3>Progressive Disclosure</h3>
-                    <p>Load context only when needed</p>
-                    <div style="margin-top: 2em;">
-                        <p><strong>Tier 1:</strong> System prompts (always loaded)</p>
-                        <p><strong>Tier 2:</strong> Skill documentation (on-demand)</p>
-                        <p><strong>Tier 3:</strong> Reference files (just-in-time)</p>
-                    </div>
+~/PAI/                              # PAI Repository
+└── .claude/
+    ├── skills/                     # Domain expertise packages
+    │   ├── CORE/                   # System foundation
+    │   ├── Security/               # Threat modeling, compliance
+    │   └── Research/               # Multi-source analysis
+    ├── hooks/                      # Event automation
+    │   ├── start-hook.ts
+    │   ├── stop-hook.ts
+    │   └── lib/context-save.ts
+    └── scripts/
+        ├── pai-launch.sh           # Main launcher
+        └── pre-startup.d/          # Modular startup scripts
+            ├── 01-mcp-sync.sh
+            ├── 02-health-check.sh
+            ├── 03-context-detection.sh
+            └── 04-auto-update.sh</code></pre>
                     <aside class="notes">
-                        Progressive Disclosure is the secret to PAI's efficiency. Tier 1 system prompts are always loaded - just the essentials. Tier 2 skill documentation loads when you activate a skill. Tier 3 reference files load only when needed for specialized detail. This means fast responses without overwhelming context windows.
+                        Complete file system layout. User's ~/.claude has personalized settings and local history. Symlinks point to the PAI repo for skills, hooks, and scripts - this means git pull updates everything automatically. The repo contains all the domain expertise and automation code.
                     </aside>
                 </section>
             </section>
@@ -335,9 +674,9 @@
                         <p><strong>Request:</strong> "Review this OAuth2 implementation for a SaaS product"</p>
                         <p style="margin-top: 1em; color: #42affa;">PAI auto-selects roster:</p>
                         <ul style="list-style: none;">
-                            <li>✓ Daniel (Security) - OAuth2 vulnerabilities</li>
-                            <li>✓ Clay (Architecture) - Token management design</li>
-                            <li>✓ Amy (QA) - Edge case testing</li>
+                            <li>&#10003; Daniel (Security) - OAuth2 vulnerabilities</li>
+                            <li>&#10003; Clay (Architecture) - Token management design</li>
+                            <li>&#10003; Amy (QA) - Edge case testing</li>
                         </ul>
                     </div>
                     <aside class="notes">
@@ -381,7 +720,7 @@
                 <section>
                     <h3>Comparative Research</h3>
                     <div class="highlight-box">
-                        <p>Same question → Multiple AI models</p>
+                        <p>Same question > Multiple AI models</p>
                         <ul>
                             <li>Claude's perspective (analytical)</li>
                             <li>Gemini's perspective (creative)</li>
@@ -400,12 +739,12 @@
                         <p><strong>Request:</strong> "Compare top 3 SIEM solutions for mid-market companies"</p>
                         <p style="margin-top: 1em; color: #42affa;">PAI Research Skill:</p>
                         <ul style="list-style: none;">
-                            <li>→ Parallel research via Claude, Gemini, Perplexity</li>
-                            <li>→ Structured comparison table</li>
-                            <li>→ Pricing analysis</li>
-                            <li>→ Deployment considerations</li>
-                            <li>→ Customer segment fit</li>
-                            <li>→ Synthesized recommendation</li>
+                            <li>> Parallel research via Claude, Gemini, Perplexity</li>
+                            <li>> Structured comparison table</li>
+                            <li>> Pricing analysis</li>
+                            <li>> Deployment considerations</li>
+                            <li>> Customer segment fit</li>
+                            <li>> Synthesized recommendation</li>
                         </ul>
                     </div>
                     <aside class="notes">
@@ -442,11 +781,11 @@
                     <pre><code class="language-bash">$ "Check the status of our staging server"
 
 PAI executes:
-→ ssh user@staging.company.com
-→ systemctl status app
-→ tail -n 50 /var/log/app/error.log
-→ df -h
-→ ps aux | grep node
+> ssh user@staging.company.com
+> systemctl status app
+> tail -n 50 /var/log/app/error.log
+> df -h
+> ps aux | grep node
 
 Reports back:
 - App running, 2 days uptime
@@ -608,14 +947,17 @@ description: |
 
                 <section>
                     <h3>Installation</h3>
-                    <pre><code class="language-bash"># From the forge-all branch
-git clone -b forge-all https://github.com/danielmiessler/PAI.git ~/.claude
-cd ~/.claude && ./install.sh</code></pre>
+                    <pre><code class="language-bash"># One-line install
+curl -fsSL https://raw.githubusercontent.com/banjoey/Personal_AI_Infrastructure/merlin-all/.claude/setup.sh | bash
+
+# Or clone and run manually
+git clone -b merlin-all https://github.com/banjoey/Personal_AI_Infrastructure.git ~/PAI
+cd ~/PAI && ./.claude/setup.sh</code></pre>
                     <div class="highlight-box" style="margin-top: 1em;">
-                        <p>That's it. Really.</p>
+                        <p>Interactive setup - guides you through everything</p>
                     </div>
                     <aside class="notes">
-                        Installation: Clone the forge-all branch to your .claude directory, run the install script. That's it. The installer handles dependencies, configuration, and setup. You'll be prompted for your Claude API key and optional service credentials.
+                        Installation: Either one-line curl install or clone and run the setup script. It's interactive and guides you through everything including personalization, API keys, and optional components like voice server.
                     </aside>
                 </section>
 
@@ -640,10 +982,11 @@ cd ~/.claude && ./install.sh</code></pre>
                         <li>Voice notification system</li>
                         <li>History capture and learning</li>
                         <li>Standup Mode for multi-agent discussions</li>
-                        <li>Full infrastructure access</li>
+                        <li>Auto-updates and health monitoring</li>
+                        <li>Project context auto-loading</li>
                     </ul>
                     <aside class="notes">
-                        Immediately after installation you get 30+ pre-built skills covering Security, Research, Finance, Writing, Development. You get 12+ specialized agents ready to delegate to. Voice notification system is configured. History capture starts logging your work. Standup Mode is ready for multi-agent discussions. Full infrastructure access is enabled.
+                        Immediately after installation you get 30+ pre-built skills covering Security, Research, Finance, Writing, Development. You get 12+ specialized agents ready to delegate to. Voice notification system is configured. History capture starts logging your work. Standup Mode is ready for multi-agent discussions. Plus auto-updates keep you current and project context loads automatically.
                     </aside>
                 </section>
 
@@ -652,13 +995,13 @@ cd ~/.claude && ./install.sh</code></pre>
                     <ol>
                         <li>Install PAI</li>
                         <li>Configure your .env with API keys</li>
-                        <li>Launch Claude Code</li>
+                        <li>Launch with your alias (e.g., <code>pai</code> or <code>charles</code>)</li>
                         <li>Try: "What skills do I have available?"</li>
                         <li>Try: "Do research on [topic]"</li>
                         <li>Try: "Start a standup to review [design]"</li>
                     </ol>
                     <aside class="notes">
-                        Your first steps: Install PAI, configure your .env file with API keys, launch Claude Code. Then try asking "What skills do I have available?" to see your capabilities. Try "Do research on [topic]" to test the Research skill. Try "Start a standup to review [design]" to experience multi-agent collaboration. Each command teaches you the system.
+                        Your first steps: Install PAI, configure your .env file with API keys, launch using your personalized alias. Then try asking "What skills do I have available?" to see your capabilities. Try "Do research on [topic]" to test the Research skill. Try "Start a standup to review [design]" to experience multi-agent collaboration. Each command teaches you the system.
                     </aside>
                 </section>
             </section>
@@ -670,13 +1013,14 @@ cd ~/.claude && ./install.sh</code></pre>
                     <ul>
                         <li>PAI is YOUR AI system, not a generic chatbot</li>
                         <li>Built on three primitives: Skills, Agents, Hooks</li>
+                        <li>Modular launcher handles updates, context, and health</li>
                         <li>Standup Mode provides multi-agent collaboration</li>
                         <li>Real infrastructure control via SSH and file access</li>
                         <li>Extensible with your own skills and expertise</li>
                         <li>Cross-platform, one-line install</li>
                     </ul>
                     <aside class="notes">
-                        Key takeaways: PAI is YOUR system, not generic AI. It's built on Skills, Agents, and Hooks. Standup Mode gives you multi-agent collaboration that finds 2-3x more issues. You get real infrastructure control. It's extensible with your skills. Installation is one line, works everywhere.
+                        Key takeaways: PAI is YOUR system, not generic AI. It's built on Skills, Agents, and Hooks with a modular launcher. Standup Mode gives you multi-agent collaboration that finds 2-3x more issues. You get real infrastructure control. It's extensible with your skills. Installation is one line, works everywhere.
                     </aside>
                 </section>
 
@@ -684,7 +1028,7 @@ cd ~/.claude && ./install.sh</code></pre>
                     <h2>The Paradigm Shift</h2>
                     <div style="text-align: center; font-size: 1.2em; margin-top: 2em;">
                         <p>Stop <strong>using AI tools</strong></p>
-                        <p class="vs-symbol">↓</p>
+                        <p class="vs-symbol">&#8595;</p>
                         <p>Start <strong>building your AI infrastructure</strong></p>
                     </div>
                     <aside class="notes">
@@ -696,12 +1040,12 @@ cd ~/.claude && ./install.sh</code></pre>
                     <h2>Resources</h2>
                     <ul>
                         <li><strong>Blog:</strong> danielmiessler.com/blog/personal-ai-infrastructure</li>
-                        <li><strong>GitHub:</strong> github.com/danielmiessler/PAI</li>
-                        <li><strong>Installation:</strong> forge-all branch</li>
+                        <li><strong>GitHub:</strong> github.com/banjoey/Personal_AI_Infrastructure</li>
+                        <li><strong>Installation:</strong> merlin-all branch</li>
                         <li><strong>Documentation:</strong> In ~/.claude/skills/CORE/</li>
                     </ul>
                     <aside class="notes">
-                        Resources: Daniel Miessler's blog post on Personal AI Infrastructure is the foundational read. GitHub repo at danielmiessler/PAI, use the forge-all branch. After installation, full documentation is in your .claude/skills/CORE directory including the CONSTITUTION.md which defines the entire system architecture.
+                        Resources: Daniel Miessler's blog post on Personal AI Infrastructure is the foundational read. GitHub repo with the merlin-all branch. After installation, full documentation is in your .claude/skills/CORE directory including the CONSTITUTION.md which defines the entire system architecture.
                     </aside>
                 </section>
 
@@ -731,7 +1075,13 @@ cd ~/.claude && ./install.sh</code></pre>
             height: 1080,
             margin: 0.1,
             minScale: 0.2,
-            maxScale: 2.0
+            maxScale: 2.0,
+            // Enable vertical slides navigation
+            navigationMode: 'default',
+            // Show controls for vertical navigation
+            controls: true,
+            controlsLayout: 'bottom-right',
+            controlsTutorial: true
         });
     </script>
 </body>
