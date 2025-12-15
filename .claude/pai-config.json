@@ -1,0 +1,40 @@
+{
+  "_comment": "PAI Launcher Configuration - Separate from Claude Code settings for multi-environment support",
+  "_design_note": "This file is intentionally separate from settings.json to support future CLI environments (gemini, opencode, etc.). Each environment may have its own settings.json equivalent, but pai-config.json is shared across all. Decision made 2025-12-15.",
+
+  "cli": "claude",
+
+  "autoUpdate": "notify",
+  "_autoUpdate_options": ["notify", "auto", "off"],
+  "_autoUpdate_descriptions": {
+    "notify": "Check for updates on launch, show message if available",
+    "auto": "Run git pull automatically, notify if setup.sh needed (falls back to notify if local changes exist)",
+    "off": "Don't check for updates, don't mention it"
+  },
+
+  "context": {
+    "onLoad": "auto-load",
+    "_onLoad_options": ["auto-load", "notify", "none"],
+    "_onLoad_descriptions": {
+      "auto-load": "Silently load project context if exists",
+      "notify": "Tell user context exists, don't auto-load",
+      "none": "Ignore context files"
+    },
+
+    "onExit": "none",
+    "_onExit_options": ["prompt", "auto-save", "none"],
+    "_onExit_descriptions": {
+      "prompt": "Ask user if they want to save context on exit",
+      "auto-save": "Always save context on exit",
+      "none": "Never save context on exit (default)"
+    }
+  },
+
+  "modules": {
+    "_comment": "Enable/disable individual pre-startup modules",
+    "mcpSync": true,
+    "healthCheck": true,
+    "contextDetection": true,
+    "autoUpdate": true
+  }
+}

@@ -3,6 +3,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { shouldSaveContext, saveContext, extractSessionSummary } from './lib/context-save';
 
 /**
  * Generate 4-word tab title summarizing what was done
@@ -277,10 +278,13 @@ async function main() {
   }
 
   let transcriptPath;
+  let sessionCwd = process.cwd(); // Default to current directory
   try {
     const parsed = JSON.parse(input);
     transcriptPath = parsed.transcript_path;
+    sessionCwd = parsed.cwd || parsed.session_cwd || sessionCwd;
     console.error(`📁 Transcript path: ${transcriptPath}`);
+    console.error(`📂 Session CWD: ${sessionCwd}`);
   } catch (e) {
     console.error(`❌ Error parsing input JSON: ${e}`);
     process.exit(0);
@@ -569,6 +573,33 @@ async function main() {
     // Use the actual completion message as the tab title
     const finalTabTitle = message.slice(0, 50); // Limit to 50 chars for tab title
     process.stderr.write(`\033]2;${finalTabTitle}\007`);
+  }
+
+  // Context save on exit (based on pai-config.json settings)
+  try {
+    const contextDecision = shouldSaveContext();
+    if (contextDecision.save) {
+      console.error(`📄 Context save: ${contextDecision.prompt ? 'prompted' : 'auto-saving'}...`);
+
+      // Extract session summary from transcript
+      const sessionSummary = extractSessionSummary(transcript);
+
+      // Note: Prompting in stop-hook is tricky since we're non-interactive
+      // For now, we just save automatically when configured
+      // Future: Could implement a pre-exit prompt via the session itself
+      if (!contextDecision.prompt || process.env.PAI_CONTEXT_FORCE_SAVE === 'true') {
+        const result = saveContext(sessionCwd, sessionSummary);
+        if (result.saved) {
+          console.error(`✅ Context saved to: ${result.path}`);
+        } else if (result.error) {
+          console.error(`⚠️ Context save failed: ${result.error}`);
+        }
+      } else {
+        console.error(`ℹ️ Context save in 'prompt' mode - use /context save to save manually`);
+      }
+    }
+  } catch (e) {
+    console.error(`⚠️ Context save error: ${e}`);
   }
 
   console.error(`🎬 STOP-HOOK COMPLETED SUCCESSFULLY at ${new Date().toISOString()}\n`);
