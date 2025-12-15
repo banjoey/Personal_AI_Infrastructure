@@ -526,6 +526,55 @@ else
     print_info "Keeping existing environment variables"
 fi
 
+# ----------------------------------------
+# Ask about creating a shortcut alias
+# ----------------------------------------
+echo ""
+print_info "PAI includes a modular launcher (pai-launch.sh) that runs pre-startup checks."
+print_info "You can create a shell alias to launch it easily."
+echo ""
+
+if ask_yes_no "Create a shell alias for the PAI launcher?"; then
+    # Ask for the alias name
+    echo ""
+    echo "Choose an alias name (what you'll type to launch PAI):"
+    echo "  Examples: pai, charles, kai, claude-pai"
+    echo ""
+    ALIAS_NAME=$(ask_input "Alias name" "pai")
+
+    # Validate alias doesn't conflict with existing commands
+    if command_exists "$ALIAS_NAME"; then
+        print_warning "'$ALIAS_NAME' already exists as a command"
+        if ! ask_yes_no "Override it anyway?"; then
+            print_info "Skipping alias creation"
+            ALIAS_NAME=""
+        fi
+    fi
+
+    if [ -n "$ALIAS_NAME" ]; then
+        # Add alias to shell config
+        # Check if alias already exists
+        if grep -q "alias $ALIAS_NAME=" "$SHELL_CONFIG" 2>/dev/null; then
+            # Remove old alias
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "/alias $ALIAS_NAME=/d" "$SHELL_CONFIG"
+            else
+                sed -i "/alias $ALIAS_NAME=/d" "$SHELL_CONFIG"
+            fi
+        fi
+
+        # Add new alias
+        echo "" >> "$SHELL_CONFIG"
+        echo "# PAI launcher alias" >> "$SHELL_CONFIG"
+        echo "alias $ALIAS_NAME='$PAI_DIR/.claude/scripts/pai-launch.sh'" >> "$SHELL_CONFIG"
+
+        print_success "Alias created: '$ALIAS_NAME' → PAI launcher"
+        print_info "After restarting your terminal, just type '$ALIAS_NAME' to launch!"
+    fi
+else
+    print_info "You can always launch PAI manually with: $PAI_DIR/.claude/scripts/pai-launch.sh"
+fi
+
 # Source the configuration for this session
 export PAI_DIR="$PAI_DIR"
 export PAI_HOME="$HOME"
@@ -700,7 +749,7 @@ if ask_yes_no "Are you using Claude Code?"; then
     print_step "Setting up symlinks to PAI..."
 
     # List of directories to symlink (NOT history/scratchpad - those are local)
-    SYMLINK_DIRS="skills hooks commands Tools agents"
+    SYMLINK_DIRS="skills hooks commands Tools agents scripts"
 
     for dir in $SYMLINK_DIRS; do
         if [ -d "$PAI_DIR/.claude/$dir" ]; then
@@ -794,18 +843,62 @@ if ask_yes_no "Are you using Claude Code?"; then
     print_success "Settings configured with your personalization"
 
     # ----------------------------------------
+    # Initialize pai-config.json (cross-environment config)
+    # ----------------------------------------
+    print_step "Configuring PAI launcher settings..."
+
+    PAI_CONFIG_PATH="$HOME/.claude/pai-config.json"
+
+    if [ -f "$PAI_CONFIG_PATH" ]; then
+        print_info "pai-config.json already exists - preserving your settings"
+    else
+        # Copy template from PAI repo
+        if [ -f "$PAI_DIR/.claude/pai-config.json" ]; then
+            cp "$PAI_DIR/.claude/pai-config.json" "$PAI_CONFIG_PATH"
+            print_success "PAI launcher config initialized"
+        else
+            # Create default config if template doesn't exist
+            cat > "$PAI_CONFIG_PATH" << 'PAICONFIG'
+{
+  "_design_note": "This file is intentionally separate from settings.json to support future CLI environments (gemini, opencode, etc.). Each environment may have its own settings.json equivalent, but pai-config.json is shared across all. Decision made 2025-12-15.",
+  "cli": "claude",
+  "autoUpdate": "notify",
+  "context": {
+    "onLoad": "auto-load",
+    "onExit": "none"
+  },
+  "modules": {
+    "mcpSync": true,
+    "healthCheck": true,
+    "contextDetection": true,
+    "autoUpdate": true
+  }
+}
+PAICONFIG
+            print_success "PAI launcher config created with defaults"
+        fi
+
+        print_info "Launcher settings (can be changed in ~/.claude/pai-config.json):"
+        echo "  • Auto-update: notify (shows available updates)"
+        echo "  • Context on load: auto-load (reads project context files)"
+        echo "  • Context on exit: none (disabled by default)"
+    fi
+
+    # ----------------------------------------
     # Summary of what was set up
     # ----------------------------------------
     echo ""
     print_info "Claude Code Integration Summary:"
-    echo "  • Symlinked: skills/, hooks/, commands/, Tools/, agents/"
+    echo "  • Symlinked: skills/, hooks/, commands/, Tools/, agents/, scripts/"
     echo "  • Copied: settings.json (with your name: $AI_NAME)"
+    echo "  • Created: pai-config.json (launcher configuration)"
     if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
         echo "  • Backup: $BACKUP_DIR"
     fi
     echo ""
     echo "  ${CYAN}To update PAI:${NC} Re-run this setup script"
     echo "  ${CYAN}Your customizations:${NC} Edit ~/.claude/settings.json directly"
+    echo "  ${CYAN}Launcher settings:${NC} Edit ~/.claude/pai-config.json"
     echo "  ${CYAN}PAI updates:${NC} Symlinked dirs update automatically with git pull"
     echo ""
 
