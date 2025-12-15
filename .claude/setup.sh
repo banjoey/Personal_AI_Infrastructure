@@ -439,11 +439,41 @@ fi
 # Ask for personalization (ALWAYS, regardless of shell config update)
 print_step "Personalizing your PAI installation..."
 
-# Ask for AI assistant name
-AI_NAME=$(ask_input "What would you like to call your AI assistant?" "Kai")
+# ----------------------------------------
+# Detect existing names from settings.json (for upgrades)
+# ----------------------------------------
+EXISTING_AI_NAME=""
+EXISTING_USER_NAME=""
 
-# Ask for user's name
-USER_NAME=$(ask_input "What's your name?" "User")
+if [ -f "$HOME/.claude/settings.json" ]; then
+    # Try to extract existing AI name (DA or ASSISTANT_NAME)
+    if command_exists jq; then
+        EXISTING_AI_NAME=$(jq -r '.env.DA // .env.ASSISTANT_NAME // empty' "$HOME/.claude/settings.json" 2>/dev/null)
+        EXISTING_USER_NAME=$(jq -r '.env.USER_NAME // empty' "$HOME/.claude/settings.json" 2>/dev/null)
+    else
+        # Fallback: use grep/sed for systems without jq
+        EXISTING_AI_NAME=$(grep -o '"DA": "[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | cut -d'"' -f4)
+        if [ -z "$EXISTING_AI_NAME" ]; then
+            EXISTING_AI_NAME=$(grep -o '"ASSISTANT_NAME": "[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | cut -d'"' -f4)
+        fi
+        EXISTING_USER_NAME=$(grep -o '"USER_NAME": "[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | cut -d'"' -f4)
+    fi
+fi
+
+# Set defaults: use existing names if found, otherwise "Kai" and "User"
+DEFAULT_AI_NAME="${EXISTING_AI_NAME:-Kai}"
+DEFAULT_USER_NAME="${EXISTING_USER_NAME:-User}"
+
+# Show upgrade message if we found existing names
+if [ -n "$EXISTING_AI_NAME" ] && [ "$EXISTING_AI_NAME" != "Kai" ] && [ "$EXISTING_AI_NAME" != "PAI" ]; then
+    print_info "Found existing configuration: AI='$EXISTING_AI_NAME', User='$EXISTING_USER_NAME'"
+fi
+
+# Ask for AI assistant name (with detected default)
+AI_NAME=$(ask_input "What would you like to call your AI assistant?" "$DEFAULT_AI_NAME")
+
+# Ask for user's name (with detected default)
+USER_NAME=$(ask_input "What's your name?" "$DEFAULT_USER_NAME")
 
 # Ask for color
 echo ""
