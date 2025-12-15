@@ -405,18 +405,30 @@ fi
 
 print_header "Step 5: Configuring Environment"
 
-# Detect shell
-if [ -n "$ZSH_VERSION" ]; then
-    SHELL_CONFIG="$HOME/.zshrc"
-    SHELL_NAME="zsh"
-elif [ -n "$BASH_VERSION" ]; then
-    SHELL_CONFIG="$HOME/.bashrc"
-    SHELL_NAME="bash"
-else
-    print_warning "Couldn't detect shell type. Defaulting to .zshrc"
-    SHELL_CONFIG="$HOME/.zshrc"
-    SHELL_NAME="zsh"
-fi
+# Detect user's DEFAULT shell (not the script's shell)
+# $SHELL contains the user's login shell, which is what we want
+USER_SHELL=$(basename "$SHELL")
+case "$USER_SHELL" in
+    zsh)
+        SHELL_CONFIG="$HOME/.zshrc"
+        SHELL_NAME="zsh"
+        ;;
+    bash)
+        SHELL_CONFIG="$HOME/.bashrc"
+        SHELL_NAME="bash"
+        ;;
+    *)
+        # Default to zsh on macOS, bash on Linux
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            SHELL_CONFIG="$HOME/.zshrc"
+            SHELL_NAME="zsh"
+        else
+            SHELL_CONFIG="$HOME/.bashrc"
+            SHELL_NAME="bash"
+        fi
+        print_warning "Unknown shell '$USER_SHELL'. Defaulting to $SHELL_NAME"
+        ;;
+esac
 
 print_info "Detected shell: $SHELL_NAME"
 print_info "Configuration file: $SHELL_CONFIG"
@@ -534,6 +546,9 @@ print_info "PAI includes a modular launcher (pai-launch.sh) that runs pre-startu
 print_info "You can create a shell alias to launch it easily."
 echo ""
 
+# PAI aliases file - works across bash/zsh
+PAI_ALIASES_FILE="$HOME/.pai_aliases"
+
 if ask_yes_no "Create a shell alias for the PAI launcher?"; then
     # Ask for the alias name
     echo ""
@@ -552,24 +567,43 @@ if ask_yes_no "Create a shell alias for the PAI launcher?"; then
     fi
 
     if [ -n "$ALIAS_NAME" ]; then
-        # Add alias to shell config
-        # Check if alias already exists
-        if grep -q "alias $ALIAS_NAME=" "$SHELL_CONFIG" 2>/dev/null; then
-            # Remove old alias
+        # Create/update .pai_aliases file
+        # This approach works for both bash and zsh
+
+        # Create the aliases file if it doesn't exist
+        if [ ! -f "$PAI_ALIASES_FILE" ]; then
+            cat > "$PAI_ALIASES_FILE" << 'ALIASES_HEADER'
+# PAI (Personal AI Infrastructure) Aliases
+# This file is sourced by your shell config (.bashrc/.zshrc)
+# Managed by PAI setup - feel free to add your own aliases here
+
+ALIASES_HEADER
+        fi
+
+        # Remove old alias if it exists in the file
+        if grep -q "alias $ALIAS_NAME=" "$PAI_ALIASES_FILE" 2>/dev/null; then
             if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "/alias $ALIAS_NAME=/d" "$SHELL_CONFIG"
+                sed -i '' "/alias $ALIAS_NAME=/d" "$PAI_ALIASES_FILE"
             else
-                sed -i "/alias $ALIAS_NAME=/d" "$SHELL_CONFIG"
+                sed -i "/alias $ALIAS_NAME=/d" "$PAI_ALIASES_FILE"
             fi
         fi
 
-        # Add new alias
-        echo "" >> "$SHELL_CONFIG"
-        echo "# PAI launcher alias" >> "$SHELL_CONFIG"
-        echo "alias $ALIAS_NAME='$PAI_DIR/.claude/scripts/pai-launch.sh'" >> "$SHELL_CONFIG"
+        # Add new alias to .pai_aliases
+        echo "alias $ALIAS_NAME='$PAI_DIR/.claude/scripts/pai-launch.sh'" >> "$PAI_ALIASES_FILE"
+
+        # Ensure .pai_aliases is sourced from shell config
+        if ! grep -q "source.*\.pai_aliases" "$SHELL_CONFIG" 2>/dev/null && \
+           ! grep -q "\. .*\.pai_aliases" "$SHELL_CONFIG" 2>/dev/null; then
+            echo "" >> "$SHELL_CONFIG"
+            echo "# Source PAI aliases" >> "$SHELL_CONFIG"
+            echo "[ -f ~/.pai_aliases ] && source ~/.pai_aliases" >> "$SHELL_CONFIG"
+            print_info "Added .pai_aliases sourcing to $SHELL_CONFIG"
+        fi
 
         print_success "Alias created: '$ALIAS_NAME' → PAI launcher"
-        print_info "After restarting your terminal, just type '$ALIAS_NAME' to launch!"
+        print_info "Aliases stored in: ~/.pai_aliases"
+        print_info "Run 'source ~/.pai_aliases' or restart your terminal to use it"
     fi
 else
     print_info "You can always launch PAI manually with: $PAI_DIR/.claude/scripts/pai-launch.sh"
