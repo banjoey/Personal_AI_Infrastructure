@@ -822,25 +822,24 @@ if ask_yes_no "Are you using Claude Code?"; then
     cp "$PAI_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
 
     # Now personalize the COPY with user values (never touch PAI repo)
-    # PAI_DIR in settings.json must point to ~/PAI/.claude (repo + .claude) so hooks can find files
-    SETTINGS_PAI_DIR="$PAI_DIR/.claude"
+    # PAI_DIR in settings.json points to repo root (~/PAI), hooks use ${PAI_DIR}/.claude/
 
     if command_exists jq; then
         # Use jq for reliable JSON manipulation (preferred)
-        jq --arg pai_dir "$SETTINGS_PAI_DIR" \
+        jq --arg pai_dir "$PAI_DIR" \
            --arg ai_name "$AI_NAME" \
            --arg user_name "$USER_NAME" \
            '.env.PAI_DIR = $pai_dir | .env.DA = $ai_name | .env.ASSISTANT_NAME = $ai_name | .env.USER_NAME = $user_name' \
            "$HOME/.claude/settings.json" > "$HOME/.claude/settings.json.tmp"
         mv "$HOME/.claude/settings.json.tmp" "$HOME/.claude/settings.json"
-        print_info "Configured settings.json with jq (PAI_DIR=$SETTINGS_PAI_DIR)"
+        print_info "Configured settings.json with jq (PAI_DIR=$PAI_DIR)"
     else
         # Fallback to sed (less reliable but works without jq)
         print_warning "jq not found - using sed fallback (install jq for better reliability)"
         if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' \
-                -e "s|/Users/YOURNAME/.claude|$SETTINGS_PAI_DIR|g" \
-                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure/.claude|$SETTINGS_PAI_DIR|g" \
+                -e "s|/Users/YOURNAME/PAI|$PAI_DIR|g" \
+                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure|$PAI_DIR|g" \
                 -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
                 -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
                 -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
@@ -851,8 +850,8 @@ if ask_yes_no "Are you using Claude Code?"; then
                 "$HOME/.claude/settings.json"
         else
             sed -i \
-                -e "s|/Users/YOURNAME/.claude|$SETTINGS_PAI_DIR|g" \
-                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure/.claude|$SETTINGS_PAI_DIR|g" \
+                -e "s|/Users/YOURNAME/PAI|$PAI_DIR|g" \
+                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure|$PAI_DIR|g" \
                 -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
                 -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
                 -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
