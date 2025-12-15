@@ -15,7 +15,7 @@
 #
 
 # Use PAI_DIR from environment or default
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
+PAI_DIR="${PAI_DIR:-$HOME/PAI}"
 
 # Colors
 RED='\033[0;31m'

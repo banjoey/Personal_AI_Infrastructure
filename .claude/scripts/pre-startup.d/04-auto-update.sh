@@ -28,7 +28,7 @@ find_pai_repo() {
     fi
 
     # Check if PAI_DIR points to a .claude inside a git repo
-    local pai_dir="${PAI_DIR:-$HOME/.claude}"
+    local pai_dir="${PAI_DIR:-$HOME/PAI}"
     local parent_dir=$(dirname "$pai_dir")
     if [[ -d "$parent_dir/.git" ]]; then
         echo "$parent_dir"

@@ -17,7 +17,7 @@
 #
 
 # Use PAI_DIR from environment or default
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
+PAI_DIR="${PAI_DIR:-$HOME/PAI}"
 GLOBAL_PAI_CONFIG="$HOME/.claude/pai-config.json"
 # Project-level config can override global (checked in get_config)
 

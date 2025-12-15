@@ -21,9 +21,10 @@
 
 set -e
 
-# Resolve PAI_DIR (from env or default to ~/.claude)
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
-SCRIPTS_DIR="$PAI_DIR/scripts"
+# Resolve PAI_DIR (from env or default to ~/PAI)
+# PAI_DIR is the repo root, .claude subdirectory contains scripts/hooks/skills
+PAI_DIR="${PAI_DIR:-$HOME/PAI}"
+SCRIPTS_DIR="$PAI_DIR/.claude/scripts"
 MODULES_DIR="$SCRIPTS_DIR/pre-startup.d"
 
 # Colors for output

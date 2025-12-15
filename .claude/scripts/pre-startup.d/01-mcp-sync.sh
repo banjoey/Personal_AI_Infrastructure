@@ -12,8 +12,8 @@
 #
 
 # Use PAI_DIR from environment or default
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
-GLOBAL_MCP="$PAI_DIR/.mcp.json"
+PAI_DIR="${PAI_DIR:-$HOME/PAI}"
+GLOBAL_MCP="$PAI_DIR/.claude/.mcp.json"
 
 # Fallback to ~/.claude if PAI_DIR doesn't have .mcp.json
 if [[ ! -f "$GLOBAL_MCP" ]] && [[ -f "$HOME/.claude/.mcp.json" ]]; then
