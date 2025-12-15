@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAI Enablement - Personal AI Infrastructure</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reset.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/theme/black.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/monokai.css">
+    <style>
+        .reveal {
+            font-size: 36px;
+        }
+        .reveal h1 {
+            font-size: 2.5em;
+            text-transform: none;
+        }
+        .reveal h2 {
+            font-size: 1.8em;
+            text-transform: none;
+            color: #42affa;
+        }
+        .reveal h3 {
+            font-size: 1.4em;
+            text-transform: none;
+            color: #42affa;
+        }
+        .reveal ul {
+            font-size: 0.9em;
+        }
+        .reveal li {
+            margin-bottom: 0.5em;
+        }
+        .reveal strong {
+            color: #42affa;
+        }
+        .reveal code {
+            background: #1e1e1e;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        .reveal pre {
+            font-size: 0.55em;
+        }
+        .two-column {
+            display: flex;
+            gap: 2em;
+        }
+        .two-column > div {
+            flex: 1;
+        }
+        .highlight-box {
+            background: rgba(66, 175, 250, 0.1);
+            border-left: 4px solid #42affa;
+            padding: 1em;
+            margin: 1em 0;
+        }
+        .demo-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.3em 0.6em;
+            border-radius: 5px;
+            font-size: 0.6em;
+            font-weight: bold;
+            margin-left: 1em;
+        }
+        .vs-symbol {
+            color: #ff6b6b;
+            font-size: 2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- Title Slide -->
+            <section>
+                <h1>Personal AI Infrastructure</h1>
+                <h3>Building Your Own AI System That Knows YOU</h3>
+                <p style="margin-top: 2em; font-size: 0.8em;">Enablement Session for Cybersecurity Presales Teams</p>
+                <aside class="notes">
+                    Welcome! Today we're diving into Personal AI Infrastructure - PAI. This is a 1-hour session designed to show you how to build your own AI system that actually understands YOU, your workflows, and your expertise. This isn't about generic chatbots - it's about creating your personal AI infrastructure.
+                </aside>
+            </section>
+
+            <!-- Section 1: What is PAI? -->
+            <section>
+                <section>
+                    <h2>What is PAI?</h2>
+                    <p>Personal AI Infrastructure</p>
+                    <aside class="notes">
+                        Let's start with the fundamental question: What is PAI? PAI stands for Personal AI Infrastructure - the foundational concept comes from Daniel Miessler's vision of AI that augments human capabilities.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Not a Generic Chatbot</h3>
+                    <div class="highlight-box">
+                        <p><strong>PAI is YOUR system</strong></p>
+                        <ul>
+                            <li>Knows YOUR workflows</li>
+                            <li>Understands YOUR domain expertise</li>
+                            <li>Uses YOUR tools and infrastructure</li>
+                            <li>Learns from YOUR work</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        The critical distinction: This is NOT Claude Desktop or ChatGPT. Those are generic chatbots. PAI is YOUR system - it knows how YOU work, understands YOUR cybersecurity expertise, connects to YOUR infrastructure, and learns from YOUR experience. Think of it as the difference between renting a car vs. owning a custom-built vehicle.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Built on Claude Code, Extended Dramatically</h3>
+                    <div class="two-column">
+                        <div>
+                            <h4>Claude Desktop</h4>
+                            <ul>
+                                <li>Chat interface</li>
+                                <li>File reading</li>
+                                <li>Basic tools</li>
+                                <li>No memory</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>PAI System</h4>
+                            <ul>
+                                <li>SSH into servers</li>
+                                <li>Modify files on disk</li>
+                                <li>Persistent memory</li>
+                                <li>Domain skills</li>
+                                <li>Multi-agent standups</li>
+                                <li>Event-driven hooks</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <aside class="notes">
+                        PAI is built on Anthropic's Claude Code but extends it dramatically. While Claude Desktop can chat and read files, PAI can SSH into your servers, modify code directly, remember everything it learns through a history system, leverage domain-specific skills like Security and Research, run multi-agent collaborative discussions, and automatically trigger actions based on events.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>The Core Difference</h3>
+                    <div style="text-align: center; font-size: 1.2em; margin-top: 2em;">
+                        <p><strong>Generic AI:</strong> "What can I do for you?"</p>
+                        <p class="vs-symbol">↓</p>
+                        <p><strong>Your PAI:</strong> "I know your infrastructure, your preferences, your workflows - what are we building today?"</p>
+                    </div>
+                    <aside class="notes">
+                        The fundamental shift: Generic AI asks what it can do for you. YOUR PAI already knows your infrastructure, preferences, and workflows - it's ready to work WITH you, not just FOR you. It's the difference between hiring a contractor vs. working with a long-term team member who knows the codebase.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Foundational Vision</h3>
+                    <blockquote style="font-size: 0.8em;">
+                        "The orchestration and scaffolding are far more important than the model's intelligence."
+                        <footer>— Daniel Miessler</footer>
+                    </blockquote>
+                    <p style="margin-top: 1em;">System architecture > Raw AI power</p>
+                    <aside class="notes">
+                        This quote from Daniel Miessler captures the essence: System architecture matters MORE than raw AI power. A well-structured PAI system with Sonnet outperforms a chaotic setup with Opus. The scaffolding - your skills, agents, workflows - makes the difference between toy chatbot and production system.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 2: Architecture Overview -->
+            <section>
+                <section>
+                    <h2>Architecture Overview</h2>
+                    <p>The Three Core Primitives</p>
+                    <aside class="notes">
+                        Now let's understand how PAI is actually built. The architecture is based on three core primitives that work together: Skills, Agents, and Hooks.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Primitive 1: Skills</h3>
+                    <p>Self-contained AI capabilities with automatic routing</p>
+                    <pre><code class="language-yaml">description: |
+  Security engineering skill for threat modeling and compliance.
+
+  USE WHEN user mentions 'threat model', 'CMMC',
+  'security requirements', 'vulnerability analysis'</code></pre>
+                    <div class="highlight-box">
+                        <strong>Automatic activation</strong> based on your request
+                    </div>
+                    <aside class="notes">
+                        Skills are self-contained packages of domain expertise. Each skill has a USE WHEN clause that automatically activates it based on your request. For example, mention "threat modeling" and the Security skill loads. You have skills for Research, Finance, AgilePm, ArticleWriter - each containing specialized workflows and knowledge.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Example Skills</h3>
+                    <ul>
+                        <li><strong>Security:</strong> Threat modeling, CMMC compliance, vulnerability analysis</li>
+                        <li><strong>Research:</strong> Multi-source comparative analysis with Gemini/Perplexity</li>
+                        <li><strong>Standup:</strong> Multi-agent collaborative decision-making</li>
+                        <li><strong>AgilePm:</strong> PRD creation, epic decomposition, sprint planning</li>
+                        <li><strong>Finance:</strong> Portfolio analysis, tax strategy, retirement planning</li>
+                    </ul>
+                    <aside class="notes">
+                        Here are some real skills in action: Security skill handles threat modeling and compliance frameworks. Research skill orchestrates multiple AI models for comparative analysis. Standup skill runs multi-agent discussions. AgilePm generates PRDs and user stories. Finance skill handles investment analysis. Each skill is a complete domain expert.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Primitive 2: Agents</h3>
+                    <p>Specialized AI personas for task delegation</p>
+                    <div class="two-column">
+                        <div>
+                            <h4>Development Team</h4>
+                            <ul style="font-size: 0.8em;">
+                                <li><code>architect</code></li>
+                                <li><code>engineer</code></li>
+                                <li><code>designer</code></li>
+                                <li><code>pentester</code></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Research Team</h4>
+                            <ul style="font-size: 0.8em;">
+                                <li><code>intern</code> (generalist)</li>
+                                <li><code>claude-researcher</code></li>
+                                <li><code>gemini-researcher</code></li>
+                                <li><code>perplexity-researcher</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <aside class="notes">
+                        Agents are specialized personas you delegate to. Your development team includes architect for system design, engineer for implementation, designer for UX, pentester for security testing. Research team has intern for general tasks, and specialized researchers using Claude, Gemini, or Perplexity. Each has their own voice ID and expertise.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Primitive 3: Hooks</h3>
+                    <p>Event-driven automation</p>
+                    <div class="highlight-box">
+                        <ul>
+                            <li><strong>start-hook:</strong> Auto-loads context at session start</li>
+                            <li><strong>stop-hook:</strong> Captures completion, triggers voice notification</li>
+                            <li><strong>tool-hook:</strong> Logs every tool usage for observability</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        Hooks are event-driven automation. Start-hook automatically loads your context when a session begins. Stop-hook captures completion messages and triggers voice notifications so you HEAR when tasks complete. Tool-hook logs everything for observability dashboards. This is infrastructure that runs automatically without you asking.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Progressive Disclosure</h3>
+                    <p>Load context only when needed</p>
+                    <div style="margin-top: 2em;">
+                        <p><strong>Tier 1:</strong> System prompts (always loaded)</p>
+                        <p><strong>Tier 2:</strong> Skill documentation (on-demand)</p>
+                        <p><strong>Tier 3:</strong> Reference files (just-in-time)</p>
+                    </div>
+                    <aside class="notes">
+                        Progressive Disclosure is the secret to PAI's efficiency. Tier 1 system prompts are always loaded - just the essentials. Tier 2 skill documentation loads when you activate a skill. Tier 3 reference files load only when needed for specialized detail. This means fast responses without overwhelming context windows.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 3: Standup Mode -->
+            <section>
+                <section>
+                    <h2>Standup Mode<span class="demo-badge">LIVE DEMO</span></h2>
+                    <h3>The Crown Jewel</h3>
+                    <p>Multi-agent collaborative decision-making</p>
+                    <aside class="notes">
+                        Now for the crown jewel of PAI: Standup Mode. This is where PAI truly shines. Instead of one AI perspective, you get a full team discussion with specialized experts debating and collaborating on your problem.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>How Standup Works</h3>
+                    <ol>
+                        <li>You present a problem or design</li>
+                        <li>PAI analyzes context and auto-selects relevant agents</li>
+                        <li>Agents discuss from their specialized perspectives</li>
+                        <li>PAI synthesizes the discussion into actionable recommendations</li>
+                    </ol>
+                    <aside class="notes">
+                        Here's the flow: You present a problem like "Review this authentication design." PAI analyzes the context and automatically selects the right agents - maybe Daniel for security, Clay for architecture, Amy for testing. They discuss from their perspectives. Finally, PAI synthesizes everything into clear recommendations with consensus and dissenting views.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>The Default Software Dev Team</h3>
+                    <ul>
+                        <li><strong>Daniel:</strong> Security expert (finds vulnerabilities)</li>
+                        <li><strong>Mary:</strong> Business analyst (user impact)</li>
+                        <li><strong>Clay:</strong> Tech lead (architecture decisions)</li>
+                        <li><strong>Hefley:</strong> Product manager (prioritization)</li>
+                        <li><strong>Amy:</strong> QA lead (testing strategy)</li>
+                    </ul>
+                    <aside class="notes">
+                        The default software dev roster includes five specialized agents: Daniel the security expert hunts vulnerabilities. Mary the BA analyzes user impact. Clay the tech lead evaluates architecture. Hefley the PM handles prioritization. Amy the QA lead designs testing strategy. Each brings their unique lens.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Custom Rosters for ANY Domain</h3>
+                    <div class="highlight-box">
+                        <p>Not just software development!</p>
+                        <ul>
+                            <li>Finance team: portfolio manager, tax advisor, risk analyst</li>
+                            <li>Legal team: contract specialist, compliance officer, IP attorney</li>
+                            <li>Healthcare team: clinician, researcher, policy expert</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        Here's the power: Standup Mode isn't limited to software. Create custom rosters for ANY domain. Need financial advice? Portfolio manager, tax advisor, and risk analyst. Legal review? Contract specialist, compliance officer, IP attorney. Healthcare decisions? Clinician, researcher, policy expert. The agents are defined in markdown - you can create any expertise you need.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Validated Results</h3>
+                    <div class="highlight-box">
+                        <p style="font-size: 1.5em; text-align: center;">
+                            <strong>2-3x more issues found</strong><br>
+                            vs. solo agent mode
+                        </p>
+                    </div>
+                    <aside class="notes">
+                        The results are validated: Standup Mode finds 2 to 3 times more issues than solo agent mode. Why? Because Mary catches user impact issues Clay might miss. Daniel finds security flaws others overlook. Amy identifies edge cases the architect didn't consider. Multiple perspectives = better outcomes.
+                    </aside>
+                </section>
+
+                <section data-background-color="#1a1a2e">
+                    <h3>DEMO: Authentication Feature Review</h3>
+                    <div style="text-align: left; margin-top: 2em; font-family: monospace; font-size: 0.7em;">
+                        <p><strong>Request:</strong> "Review this OAuth2 implementation for a SaaS product"</p>
+                        <p style="margin-top: 1em; color: #42affa;">PAI auto-selects roster:</p>
+                        <ul style="list-style: none;">
+                            <li>✓ Daniel (Security) - OAuth2 vulnerabilities</li>
+                            <li>✓ Clay (Architecture) - Token management design</li>
+                            <li>✓ Amy (QA) - Edge case testing</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        DEMO TIME: Let's say you request "Review this OAuth2 implementation for a SaaS product." PAI automatically selects Daniel for OAuth2 vulnerabilities, Clay for token management architecture, and Amy for edge case testing. Watch how each agent brings specific concerns: Daniel flags PKCE requirements, Clay questions refresh token storage, Amy identifies session timeout scenarios. The synthesis gives you a prioritized action list.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 4: Research Capabilities -->
+            <section>
+                <section>
+                    <h2>Research Capabilities<span class="demo-badge">LIVE DEMO</span></h2>
+                    <p>Multi-source comparative analysis</p>
+                    <aside class="notes">
+                        Let's talk about PAI's research capabilities. This isn't Google search - it's coordinated analysis across multiple AI models and sources to give you comprehensive, comparable insights.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>External Services (Optional)</h3>
+                    <div class="two-column">
+                        <div>
+                            <h4>Enhanced Research</h4>
+                            <ul style="font-size: 0.8em;">
+                                <li><strong>Gemini:</strong> Deep research mode</li>
+                                <li><strong>Perplexity:</strong> Web search</li>
+                                <li><strong>ElevenLabs:</strong> Voice output</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Core Works Standalone</h4>
+                            <p style="font-size: 0.8em;">PAI fully functional with just Claude API</p>
+                            <p style="font-size: 0.8em; color: #42affa;">Additional services enhance but aren't required</p>
+                        </div>
+                    </div>
+                    <aside class="notes">
+                        Important note: External services like Gemini, Perplexity, and ElevenLabs ENHANCE PAI but aren't required. The core system works perfectly with just your Claude API key. Gemini adds deep research mode. Perplexity adds web search. ElevenLabs adds voice notifications. But everything we've shown works without them.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Comparative Research</h3>
+                    <div class="highlight-box">
+                        <p>Same question → Multiple AI models</p>
+                        <ul>
+                            <li>Claude's perspective (analytical)</li>
+                            <li>Gemini's perspective (creative)</li>
+                            <li>Perplexity's perspective (current data)</li>
+                        </ul>
+                        <p style="margin-top: 1em;"><strong>Result:</strong> Comprehensive view with diverse insights</p>
+                    </div>
+                    <aside class="notes">
+                        Comparative research sends the same question to multiple AI models and compares their responses. Claude gives analytical depth. Gemini brings creative perspectives. Perplexity provides current web data. You get a comprehensive view that's more than any single model could provide.
+                    </aside>
+                </section>
+
+                <section data-background-color="#1a1a2e">
+                    <h3>DEMO: SIEM Comparison</h3>
+                    <div style="text-align: left; margin-top: 2em; font-family: monospace; font-size: 0.6em;">
+                        <p><strong>Request:</strong> "Compare top 3 SIEM solutions for mid-market companies"</p>
+                        <p style="margin-top: 1em; color: #42affa;">PAI Research Skill:</p>
+                        <ul style="list-style: none;">
+                            <li>→ Parallel research via Claude, Gemini, Perplexity</li>
+                            <li>→ Structured comparison table</li>
+                            <li>→ Pricing analysis</li>
+                            <li>→ Deployment considerations</li>
+                            <li>→ Customer segment fit</li>
+                            <li>→ Synthesized recommendation</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        DEMO: Request "Compare top 3 SIEM solutions for mid-market companies." The Research skill launches parallel queries to Claude, Gemini, and Perplexity. It builds a structured comparison table with pricing, deployment models, and customer segment fit. Then synthesizes a recommendation based on the mid-market context. This would take hours manually - PAI delivers it in minutes.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 5: Infrastructure Tasks -->
+            <section>
+                <section>
+                    <h2>Infrastructure Tasks</h2>
+                    <p>Real control over your systems</p>
+                    <aside class="notes">
+                        One of PAI's most powerful but underappreciated capabilities: real infrastructure control. This is where PAI diverges completely from Claude Desktop.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>What PAI Can Do</h3>
+                    <ul>
+                        <li><strong>SSH into servers</strong> - Check logs, restart services, deploy code</li>
+                        <li><strong>Modify files on disk</strong> - Edit configs, update code, manage infrastructure</li>
+                        <li><strong>Run commands</strong> - Execute scripts, check status, automate workflows</li>
+                        <li><strong>Check deployments</strong> - Verify production, validate changes</li>
+                    </ul>
+                    <aside class="notes">
+                        PAI can SSH into your servers to check logs, restart services, deploy code. It can modify files directly on disk - edit configs, update code, manage infrastructure as code. It runs commands and scripts. It checks deployments and verifies production. This is real operational power.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Example: Staging Server Check</h3>
+                    <pre><code class="language-bash">$ "Check the status of our staging server"
+
+PAI executes:
+→ ssh user@staging.company.com
+→ systemctl status app
+→ tail -n 50 /var/log/app/error.log
+→ df -h
+→ ps aux | grep node
+
+Reports back:
+- App running, 2 days uptime
+- Recent error: DB connection timeout (3 occurrences)
+- Disk usage: 67% on /var
+- Memory: 4.2GB/8GB used</code></pre>
+                    <aside class="notes">
+                        Real example: "Check the status of our staging server." PAI SSHs in, checks service status, tails error logs, checks disk space and memory. It reports back: app is running with 2 days uptime, found 3 recent DB connection timeouts, disk is at 67%, memory usage is healthy. One request, comprehensive infrastructure intelligence.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Security Considerations</h3>
+                    <div class="highlight-box">
+                        <p><strong>PAI respects your security boundaries:</strong></p>
+                        <ul>
+                            <li>Uses YOUR SSH keys and credentials</li>
+                            <li>Operates with YOUR permissions</li>
+                            <li>Never stores credentials in prompts</li>
+                            <li>All actions logged to history system</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        Critical security note: PAI uses YOUR SSH keys and credentials. It operates with YOUR permissions - no elevation, no backdoors. Credentials are never stored in prompts, only in your local .env file. Every action is logged to the history system for audit trails. It's your system, your permissions, your control.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 6: Building Skills -->
+            <section>
+                <section>
+                    <h2>Building Your Own Skills</h2>
+                    <p>Extend PAI with your expertise</p>
+                    <aside class="notes">
+                        Now let's talk about extending PAI with your own skills. This is where you make PAI truly yours by encoding your domain expertise.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>The Createskill Skill</h3>
+                    <div class="highlight-box">
+                        <p>PAI helps you create skills</p>
+                        <ul>
+                            <li>Ideation: "What skills would be useful?"</li>
+                            <li>Structure: Provides templates and patterns</li>
+                            <li>Implementation: Generates initial skill markdown</li>
+                            <li>Validation: Ensures proper USE WHEN routing</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        The Createskill skill is meta-magic: PAI helps you create new skills. It can ideate what skills would be useful for your work. It provides templates and patterns. It generates initial skill markdown with proper structure. It validates your USE WHEN routing clauses. It's AI helping you extend AI.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Quote of Power</h3>
+                    <blockquote style="font-size: 1em;">
+                        "Your imagination isn't even the limiting factor anymore"
+                    </blockquote>
+                    <p style="margin-top: 1em; font-size: 0.8em;">
+                        PAI can help you imagine AND create skills you didn't know you needed
+                    </p>
+                    <aside class="notes">
+                        This quote captures the paradigm shift: Your imagination isn't even the limiting factor anymore. PAI can help you imagine skills you didn't know you needed, then help you create them. It's collaborative creation at a completely new level.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Cybersecurity Example: ThreatIntel Skill</h3>
+                    <pre><code class="language-yaml">---
+name: ThreatIntel
+description: |
+  Threat intelligence aggregation and analysis.
+
+  USE WHEN user mentions 'threat intel', 'CVE lookup',
+  'vulnerability research', 'threat actor', 'IOC analysis'
+---
+
+# ThreatIntel Skill
+
+## Workflows
+
+### CVE Lookup
+1. Query NVD, MITRE, vendor advisories
+2. Aggregate CVSS scores and vectors
+3. Check exploitability in CISA KEV
+4. Identify affected products in environment
+5. Generate remediation recommendations</code></pre>
+                    <aside class="notes">
+                        Simple example: A ThreatIntel skill for cybersecurity. USE WHEN triggers on "threat intel", "CVE lookup", vulnerability research". Workflows include CVE lookup that queries NVD, MITRE, vendor advisories, aggregates CVSS scores, checks CISA KEV for active exploitation, identifies affected products in your environment, and generates remediation recommendations. That's 30 minutes of manual work automated into one request.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Your Skills = Your Competitive Advantage</h3>
+                    <ul>
+                        <li>Encode your best practices</li>
+                        <li>Automate your proven workflows</li>
+                        <li>Share expertise across your team</li>
+                        <li>Build institutional knowledge that doesn't walk out the door</li>
+                    </ul>
+                    <aside class="notes">
+                        Skills become your competitive advantage. Encode your best practices so new team members start with expert-level workflows. Automate your proven processes so they're consistent every time. Share expertise across the team - when one person solves a problem well, everyone gets that capability. Build institutional knowledge that doesn't walk out the door when people leave.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 7: Advanced Topics -->
+            <section>
+                <section>
+                    <h2>Advanced Topics</h2>
+                    <p>Quick overview</p>
+                    <aside class="notes">
+                        Quick overview of some advanced topics you'll encounter as you dive deeper into PAI.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>opencode.ai</h3>
+                    <div class="highlight-box">
+                        <p>Alternative AI coding interface</p>
+                        <ul>
+                            <li>Different UX for code generation</li>
+                            <li>Inline diffs and suggestions</li>
+                            <li>Compatible with PAI patterns</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        opencode.ai is an alternative AI coding interface with different UX for code generation, inline diffs, and suggestions. It's compatible with PAI patterns and some users prefer it for heavy coding sessions.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>BMAD METHOD</h3>
+                    <div class="highlight-box">
+                        <p>Multi-agent development methodology</p>
+                        <ul>
+                            <li><strong>B</strong>usiness requirements gathering</li>
+                            <li><strong>M</strong>ulti-agent planning discussions</li>
+                            <li><strong>A</strong>gent delegation for implementation</li>
+                            <li><strong>D</strong>elivery with quality gates</li>
+                        </ul>
+                    </div>
+                    <aside class="notes">
+                        BMAD METHOD is a multi-agent development methodology: Business requirements gathering with stakeholder analysis. Multi-agent planning discussions using Standup Mode. Agent delegation for parallel implementation. Delivery with strict quality gates and testing. It's the full software development lifecycle powered by PAI.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Section 8: Getting Started -->
+            <section>
+                <section>
+                    <h2>Getting Started</h2>
+                    <p>One-line install</p>
+                    <aside class="notes">
+                        Ready to get started? PAI installation is deliberately simple.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Installation</h3>
+                    <pre><code class="language-bash"># From the forge-all branch
+git clone -b forge-all https://github.com/danielmiessler/PAI.git ~/.claude
+cd ~/.claude && ./install.sh</code></pre>
+                    <div class="highlight-box" style="margin-top: 1em;">
+                        <p>That's it. Really.</p>
+                    </div>
+                    <aside class="notes">
+                        Installation: Clone the forge-all branch to your .claude directory, run the install script. That's it. The installer handles dependencies, configuration, and setup. You'll be prompted for your Claude API key and optional service credentials.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>Cross-Platform Support</h3>
+                    <ul>
+                        <li><strong>macOS:</strong> Native support</li>
+                        <li><strong>Linux:</strong> Native support</li>
+                        <li><strong>Windows:</strong> WSL (Windows Subsystem for Linux)</li>
+                    </ul>
+                    <p style="margin-top: 1em; color: #42affa;">All platforms fully supported</p>
+                    <aside class="notes">
+                        PAI runs on macOS natively, Linux natively, and Windows via WSL. All platforms are fully supported. The architecture is cross-platform by design.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>What You Get Immediately</h3>
+                    <ul>
+                        <li>30+ pre-built skills (Security, Research, Finance, etc.)</li>
+                        <li>12+ specialized agents</li>
+                        <li>Voice notification system</li>
+                        <li>History capture and learning</li>
+                        <li>Standup Mode for multi-agent discussions</li>
+                        <li>Full infrastructure access</li>
+                    </ul>
+                    <aside class="notes">
+                        Immediately after installation you get 30+ pre-built skills covering Security, Research, Finance, Writing, Development. You get 12+ specialized agents ready to delegate to. Voice notification system is configured. History capture starts logging your work. Standup Mode is ready for multi-agent discussions. Full infrastructure access is enabled.
+                    </aside>
+                </section>
+
+                <section>
+                    <h3>First Steps</h3>
+                    <ol>
+                        <li>Install PAI</li>
+                        <li>Configure your .env with API keys</li>
+                        <li>Launch Claude Code</li>
+                        <li>Try: "What skills do I have available?"</li>
+                        <li>Try: "Do research on [topic]"</li>
+                        <li>Try: "Start a standup to review [design]"</li>
+                    </ol>
+                    <aside class="notes">
+                        Your first steps: Install PAI, configure your .env file with API keys, launch Claude Code. Then try asking "What skills do I have available?" to see your capabilities. Try "Do research on [topic]" to test the Research skill. Try "Start a standup to review [design]" to experience multi-agent collaboration. Each command teaches you the system.
+                    </aside>
+                </section>
+            </section>
+
+            <!-- Closing -->
+            <section>
+                <section>
+                    <h2>Key Takeaways</h2>
+                    <ul>
+                        <li>PAI is YOUR AI system, not a generic chatbot</li>
+                        <li>Built on three primitives: Skills, Agents, Hooks</li>
+                        <li>Standup Mode provides multi-agent collaboration</li>
+                        <li>Real infrastructure control via SSH and file access</li>
+                        <li>Extensible with your own skills and expertise</li>
+                        <li>Cross-platform, one-line install</li>
+                    </ul>
+                    <aside class="notes">
+                        Key takeaways: PAI is YOUR system, not generic AI. It's built on Skills, Agents, and Hooks. Standup Mode gives you multi-agent collaboration that finds 2-3x more issues. You get real infrastructure control. It's extensible with your skills. Installation is one line, works everywhere.
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>The Paradigm Shift</h2>
+                    <div style="text-align: center; font-size: 1.2em; margin-top: 2em;">
+                        <p>Stop <strong>using AI tools</strong></p>
+                        <p class="vs-symbol">↓</p>
+                        <p>Start <strong>building your AI infrastructure</strong></p>
+                    </div>
+                    <aside class="notes">
+                        The paradigm shift: Stop using AI tools like disposable utilities. Start building your AI infrastructure as strategic architecture. PAI is infrastructure, not a tool. It grows with you, learns from you, becomes an extension of your expertise.
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Resources</h2>
+                    <ul>
+                        <li><strong>Blog:</strong> danielmiessler.com/blog/personal-ai-infrastructure</li>
+                        <li><strong>GitHub:</strong> github.com/danielmiessler/PAI</li>
+                        <li><strong>Installation:</strong> forge-all branch</li>
+                        <li><strong>Documentation:</strong> In ~/.claude/skills/CORE/</li>
+                    </ul>
+                    <aside class="notes">
+                        Resources: Daniel Miessler's blog post on Personal AI Infrastructure is the foundational read. GitHub repo at danielmiessler/PAI, use the forge-all branch. After installation, full documentation is in your .claude/skills/CORE directory including the CONSTITUTION.md which defines the entire system architecture.
+                    </aside>
+                </section>
+
+                <section data-background-color="#1a1a2e">
+                    <h1>Questions?</h1>
+                    <p style="margin-top: 2em;">Let's discuss how PAI can augment your cybersecurity workflows</p>
+                    <aside class="notes">
+                        Questions? Let's discuss how PAI can specifically augment your cybersecurity presales workflows. Whether it's threat modeling automation, customer research, proposal generation, or competitive analysis - PAI can be customized to your exact needs.
+                    </aside>
+                </section>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.0/plugin/highlight/highlight.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            plugins: [ RevealNotes, RevealHighlight ],
+            width: 1920,
+            height: 1080,
+            margin: 0.1,
+            minScale: 0.2,
+            maxScale: 2.0
+        });
+    </script>
+</body>
+</html>
