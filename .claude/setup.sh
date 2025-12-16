@@ -8,7 +8,7 @@
 # It's designed to be friendly, informative, and safe.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/banjoey/Personal_AI_Infrastructure/merlin-all/.claude/setup.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/banjoey/Personal_AI_Infrastructure/joey-all/.claude/setup.sh | bash
 #
 # Or download and run manually:
 #   ./setup.sh
@@ -20,7 +20,7 @@
 # ============================================
 # Each branch should set these to match its identity
 PAI_REPO="https://github.com/banjoey/Personal_AI_Infrastructure.git"
-PAI_BRANCH="merlin-all"
+PAI_BRANCH="joey-all"
 # ============================================
 
 set -e  # Exit on error
