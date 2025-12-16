@@ -13,9 +13,9 @@
  * - Bypass skill activation logic by directly injecting context
  *
  * Setup:
- * 1. Customize your ${PAI_DIR}/skills/CORE/SKILL.md with your personal context
+ * 1. Customize your ${PAI_DIR}/.claude/skills/CORE/SKILL.md with your personal context
  * 2. Add this hook to settings.json SessionStart hooks
- * 3. Ensure PAI_DIR environment variable is set (defaults to $HOME/.claude)
+ * 3. Ensure PAI_DIR environment variable is set (defaults to ~/PAI repo root)
  *
  * How it works:
  * - Runs at the start of every Claude Code session

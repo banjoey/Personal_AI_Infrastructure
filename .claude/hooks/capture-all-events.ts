@@ -8,7 +8,7 @@
 
 import { readFileSync, appendFileSync, mkdirSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { PAI_DIR } from './lib/pai-paths';
+import { PAI_DIR, HISTORY_DIR, CLAUDE_DIR } from './lib/pai-paths';
 import { enrichEventWithAgentMetadata, isAgentSpawningCall } from './lib/metadata-extraction';
 
 interface HookEvent {
@@ -43,7 +43,7 @@ function getEventsFilePath(): string {
   const month = String(pstDate.getMonth() + 1).padStart(2, '0');
   const day = String(pstDate.getDate()).padStart(2, '0');
 
-  const monthDir = join(PAI_DIR, 'history', 'raw-outputs', `${year}-${month}`);
+  const monthDir = join(HISTORY_DIR, 'raw-outputs', `${year}-${month}`);
 
   // Ensure directory exists
   if (!existsSync(monthDir)) {
@@ -55,7 +55,7 @@ function getEventsFilePath(): string {
 
 // Session-to-agent mapping functions
 function getSessionMappingFile(): string {
-  return join(PAI_DIR, 'agent-sessions.json');
+  return join(CLAUDE_DIR, 'agent-sessions.json');
 }
 
 function getAgentForSession(sessionId: string): string {

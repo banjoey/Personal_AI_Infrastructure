@@ -24,7 +24,7 @@
 import { existsSync, statSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { PAI_DIR } from './lib/pai-paths';
+import { PAI_DIR, HOOKS_DIR } from './lib/pai-paths';
 
 // Debounce duration in milliseconds (prevents duplicate SessionStart events)
 const DEBOUNCE_MS = 2000;
@@ -88,7 +88,7 @@ function shouldDebounce(): boolean {
 }
 
 async function testStopHook() {
-  const stopHookPath = join(PAI_DIR, 'hooks/stop-hook.ts');
+  const stopHookPath = join(HOOKS_DIR, 'stop-hook.ts');
 
   console.error('\n🔍 Testing stop-hook configuration...');
 

@@ -74,8 +74,9 @@ run_modules() {
     fi
 
     # Find all executable .sh files in modules directory
+    # Note: macOS find doesn't support -executable, use -perm -u+x instead
     local modules
-    modules=$(find "$MODULES_DIR" -maxdepth 1 -name "*.sh" -type f -executable 2>/dev/null | sort)
+    modules=$(find "$MODULES_DIR" -maxdepth 1 -name "*.sh" -type f -perm -u+x 2>/dev/null | sort)
 
     if [[ -z "$modules" ]]; then
         log_info "No pre-startup modules found"
