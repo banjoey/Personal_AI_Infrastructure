@@ -2,10 +2,12 @@
  * PAI Path Resolution - Single Source of Truth
  *
  * This module provides consistent path resolution across all PAI hooks.
- * It handles PAI_DIR detection whether set explicitly or defaulting to ~/.claude
+ *
+ * CONVENTION: PAI_DIR = Repository root (e.g., ~/PAI)
+ *             All PAI resources live in ${PAI_DIR}/.claude/
  *
  * Usage in hooks:
- *   import { PAI_DIR, HOOKS_DIR, SKILLS_DIR } from './lib/pai-paths';
+ *   import { PAI_DIR, CLAUDE_DIR, HOOKS_DIR, SKILLS_DIR } from './lib/pai-paths';
  */
 
 import { homedir } from 'os';
@@ -14,22 +16,30 @@ import { existsSync } from 'fs';
 
 /**
  * Smart PAI_DIR detection with fallback
+ * PAI_DIR = REPO ROOT (containing .claude/ subdirectory)
  * Priority:
  * 1. PAI_DIR environment variable (if set)
- * 2. ~/.claude (standard location)
+ * 2. ~/PAI (standard location for PAI repository)
  */
 export const PAI_DIR = process.env.PAI_DIR
   ? resolve(process.env.PAI_DIR)
-  : resolve(homedir(), '.claude');
+  : resolve(homedir(), 'PAI');
 
 /**
- * Common PAI directories
+ * PAI_DIR is the REPO ROOT (e.g., ~/PAI)
+ * All PAI resources live in the .claude subdirectory
  */
-export const HOOKS_DIR = join(PAI_DIR, 'hooks');
-export const SKILLS_DIR = join(PAI_DIR, 'skills');
-export const AGENTS_DIR = join(PAI_DIR, 'agents');
-export const HISTORY_DIR = join(PAI_DIR, 'history');
-export const COMMANDS_DIR = join(PAI_DIR, 'commands');
+export const CLAUDE_DIR = join(PAI_DIR, '.claude');
+
+/**
+ * Common PAI directories (all under .claude/)
+ */
+export const HOOKS_DIR = join(CLAUDE_DIR, 'hooks');
+export const SKILLS_DIR = join(CLAUDE_DIR, 'skills');
+export const AGENTS_DIR = join(CLAUDE_DIR, 'agents');
+export const HISTORY_DIR = join(CLAUDE_DIR, 'history');
+export const COMMANDS_DIR = join(CLAUDE_DIR, 'commands');
+export const SCRIPTS_DIR = join(CLAUDE_DIR, 'scripts');
 
 /**
  * Validate PAI directory structure on first import
@@ -38,13 +48,20 @@ export const COMMANDS_DIR = join(PAI_DIR, 'commands');
 function validatePAIStructure(): void {
   if (!existsSync(PAI_DIR)) {
     console.error(`❌ PAI_DIR does not exist: ${PAI_DIR}`);
-    console.error(`   Expected ~/.claude or set PAI_DIR environment variable`);
+    console.error(`   Set PAI_DIR to your PAI repository root (e.g., ~/PAI)`);
+    process.exit(1);
+  }
+
+  if (!existsSync(CLAUDE_DIR)) {
+    console.error(`❌ .claude directory not found: ${CLAUDE_DIR}`);
+    console.error(`   PAI_DIR should point to repo root containing .claude/`);
+    console.error(`   Current PAI_DIR: ${PAI_DIR}`);
     process.exit(1);
   }
 
   if (!existsSync(HOOKS_DIR)) {
     console.error(`❌ PAI hooks directory not found: ${HOOKS_DIR}`);
-    console.error(`   Your PAI_DIR may be misconfigured`);
+    console.error(`   Your PAI installation may be incomplete`);
     console.error(`   Current PAI_DIR: ${PAI_DIR}`);
     process.exit(1);
   }
