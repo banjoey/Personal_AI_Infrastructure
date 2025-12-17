@@ -12,6 +12,7 @@ Structured agile workflows for professional software development. Transform idea
 | Workflow | When to Use | Output |
 |----------|-------------|--------|
 | CreatePrd | Starting new project or feature | Comprehensive PRD with architecture |
+| CreateTechnicalSpec | System architecture, skill design, technical blueprints | Detailed technical specification |
 | CreateEpics | Breaking down PRD into deliverable chunks | Epic list with user value themes |
 | CreateStories | Planning sprint or implementation | User stories with acceptance criteria |
 | SprintPlanning | Organizing work into iterations | sprint-status.yaml tracking file |

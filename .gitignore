@@ -60,6 +60,7 @@ out/
 # Personal/Private data
 private/
 secrets/
+!.claude/skills/Secrets/
 credentials/
 
 # Claude Code runtime data (user-specific, changes constantly)
