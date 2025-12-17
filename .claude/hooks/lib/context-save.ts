@@ -9,10 +9,12 @@
  * Settings in pai-config.json:
  *   context.onExit: "prompt" | "auto-save" | "none"
  *
- * Context is saved to:
- *   - ./project-context.md (if it already exists)
- *   - ./.claude/context.md (if .claude/ exists)
- *   - ./CONTEXT.md (fallback)
+ * Context is saved to (aligned with Claude Code native format):
+ *   - ./CLAUDE.md (project memory - team shared)
+ *   - ./.claude/CLAUDE.md (alternative location)
+ *   - ./CLAUDE.local.md (personal project-specific)
+ *
+ * Note: Claude Code automatically loads CLAUDE.md files at startup.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
@@ -73,13 +75,19 @@ export function getContextConfig(cwd?: string): ContextConfig {
 
 /**
  * Find the context file path for the current project
+ * Aligned with Claude Code's native CLAUDE.md format
  */
 export function findContextFilePath(cwd: string): string | null {
   // Check existing locations first (prefer existing file)
+  // Priority matches Claude Code's native context system
   const existingPaths = [
+    join(cwd, 'CLAUDE.md'),           // Project memory (team shared)
+    join(cwd, '.claude', 'CLAUDE.md'), // Alternative location
+    join(cwd, 'CLAUDE.local.md'),      // Personal project-specific
+    // Legacy PAI locations (for backward compatibility)
     join(cwd, 'project-context.md'),
-    join(cwd, '.claude', 'context.md'),
-    join(cwd, 'CONTEXT.md')
+    join(cwd, 'CONTEXT.md'),
+    join(cwd, '.claude', 'context.md')
   ];
 
   for (const path of existingPaths) {
@@ -88,17 +96,14 @@ export function findContextFilePath(cwd: string): string | null {
     }
   }
 
-  // For new context, prefer .claude/context.md if .claude exists
-  if (existsSync(join(cwd, '.claude'))) {
-    return join(cwd, '.claude', 'context.md');
-  }
-
-  // Fall back to project-context.md in root
-  return join(cwd, 'project-context.md');
+  // For new context, prefer CLAUDE.local.md (personal, not committed)
+  // This avoids polluting team-shared CLAUDE.md
+  return join(cwd, 'CLAUDE.local.md');
 }
 
 /**
  * Generate context content from session summary
+ * Format compatible with Claude Code's native CLAUDE.md
  */
 export function generateContextContent(
   existingContent: string | null,

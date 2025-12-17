@@ -8,11 +8,15 @@
 # Detects and handles project context files based on pai-config.json settings:
 #   onLoad: "auto-load" | "notify" | "none"
 #
-# Context files searched (in order):
-#   - ./project-context.md
-#   - ./CONTEXT.md
-#   - ./.claude/context.md
+# Context files searched (aligned with Claude Code native format):
+#   - ./CLAUDE.md (project memory - team shared)
+#   - ./.claude/CLAUDE.md (alternative location)
+#   - ./CLAUDE.local.md (personal project-specific)
+#   - ./project-context.md (legacy PAI)
+#   - ./CONTEXT.md (legacy PAI)
+#   - ./.claude/context.md (legacy PAI)
 #
+# Note: Claude Code automatically loads CLAUDE.md files at startup.
 # The onExit behavior is handled by stop-hook.ts, not this module.
 #
 
@@ -68,11 +72,16 @@ get_config() {
 }
 
 # Find context file in current directory
+# Priority aligned with Claude Code native format and context-save.ts
 find_context_file() {
     local cwd="$1"
 
-    # Check common locations in priority order
+    # Check locations in priority order (matches context-save.ts)
     local candidates=(
+        "$cwd/CLAUDE.md"              # Project memory (team shared)
+        "$cwd/.claude/CLAUDE.md"      # Alternative location
+        "$cwd/CLAUDE.local.md"        # Personal project-specific
+        # Legacy PAI locations (backward compatibility)
         "$cwd/project-context.md"
         "$cwd/CONTEXT.md"
         "$cwd/.claude/context.md"

@@ -13,15 +13,15 @@ You are about to end this session. Before exiting, let's save context for next t
 2. **Ask the user** using AskUserQuestion:
    - Question: "Save session context before exiting?"
    - Options:
-     - "Yes, save context" - Save the summary to the project's context file
+     - "Yes, save to CLAUDE.local.md" - Save personal context (not committed to git)
+     - "Yes, save to CLAUDE.md" - Save to team-shared context
      - "No, just exit" - Exit without saving
 
 3. **If user chooses to save:**
-   - Determine the context file location (check in order):
-     - `./project-context.md` (if exists)
-     - `./.claude/context.md` (if .claude/ exists)
-     - `./CONTEXT.md` (fallback)
-   - Write the session summary with this format:
+   - For CLAUDE.local.md: Write to `./CLAUDE.local.md` (personal, gitignored)
+   - For CLAUDE.md: Write to `./CLAUDE.md` (team shared)
+   - If the file already exists, append a new session section
+   - Use this format:
      ```markdown
      ## Session Summary - [DATE]
 
@@ -33,11 +33,18 @@ You are about to end this session. Before exiting, let's save context for next t
 
      ### Next Steps
      - [Recommended follow-ups]
-     ```
-   - If the file already exists, append to or update the "Session Summary" section
 
-4. **Confirm and exit:**
-   - If saved: "Context saved to [path]. Goodbye!"
+     ---
+     ```
+
+4. **Context file priority** (for reference):
+   - `CLAUDE.md` - Project memory (team shared, Claude Code native)
+   - `.claude/CLAUDE.md` - Alternative location
+   - `CLAUDE.local.md` - Personal project-specific (recommended for session saves)
+   - Legacy: `project-context.md`, `CONTEXT.md`, `.claude/context.md`
+
+5. **Confirm and exit:**
+   - If saved: "Context saved to [path]. Claude Code will auto-load it next session. Goodbye!"
    - If not saved: "Goodbye! Use /save-and-exit next time to preserve context."
 
-5. **Important:** After completing this flow, remind the user to type `/exit` or close the terminal to end the session.
+6. **Important:** After completing this flow, remind the user to type `/exit` or Ctrl+C to end the session.

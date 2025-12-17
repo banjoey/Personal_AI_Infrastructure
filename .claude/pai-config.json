@@ -13,10 +13,12 @@
   },
 
   "context": {
+    "_files_note": "Uses Claude Code native format: CLAUDE.md, .claude/CLAUDE.md, CLAUDE.local.md (also supports legacy: project-context.md, CONTEXT.md)",
+
     "onLoad": "auto-load",
     "_onLoad_options": ["auto-load", "notify", "none"],
     "_onLoad_descriptions": {
-      "auto-load": "Silently load project context if exists",
+      "auto-load": "Silently detect project context (Claude Code auto-loads CLAUDE.md natively)",
       "notify": "Tell user context exists, don't auto-load",
       "none": "Ignore context files"
     },
@@ -24,8 +26,8 @@
     "onExit": "none",
     "_onExit_options": ["prompt", "auto-save", "none"],
     "_onExit_descriptions": {
-      "prompt": "Ask user if they want to save context on exit",
-      "auto-save": "Always save context on exit",
+      "prompt": "Use /save-and-exit command for interactive save (hooks cannot prompt)",
+      "auto-save": "Always save context to CLAUDE.local.md on exit",
       "none": "Never save context on exit (default)"
     }
   },
