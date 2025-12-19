@@ -1,0 +1,8 @@
+{
+  "totalValue": 66000,
+  "positions": [
+    { "ticker": "TSM", "shares": 20, "avgCost": 150.00, "currentPrice": 286.87, "category": "Tech/Growth" },
+    { "ticker": "MU", "shares": 15, "avgCost": 85.00, "currentPrice": 232.51, "category": "Tech/Growth" }
+  ],
+  "deploymentLog": []
+}
