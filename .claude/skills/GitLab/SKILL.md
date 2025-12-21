@@ -115,3 +115,110 @@ This skill works with both:
 4. **Protect secrets**: Use masked, protected variables
 5. **Pin versions**: Lock runner images and tools
 6. **Fail fast**: Run lint/tests early in pipeline
+
+---
+
+## CRITICAL: glab CLI Requirement
+
+**Before any GitLab CI/CD work, ensure `glab` is installed and authenticated.**
+
+```bash
+# Check if installed
+which glab || brew install glab
+
+# Check authentication
+glab auth status
+
+# If not authenticated
+glab auth login
+```
+
+### Pipeline Monitoring Commands
+
+**NEVER blind-wait for pipelines. Use glab to check status:**
+
+```bash
+# Current pipeline status
+glab ci status
+
+# Detailed view with logs
+glab ci view
+
+# List recent pipelines
+glab ci list
+
+# Trigger pipeline manually
+glab ci trigger
+
+# View specific job logs
+glab ci trace <job-id>
+```
+
+### CI Rules Gotcha
+
+**CRITICAL:** Path-based rules only trigger when those paths change.
+
+```yaml
+# This ONLY triggers on changes to docker/app/**
+rules:
+  - if: $CI_COMMIT_BRANCH == "main"
+    changes:
+      - docker/app/**/*
+```
+
+**Common mistake:** Editing `.gitlab-ci.yml` alone won't trigger the pipeline if rules require changes to other paths!
+
+**Solution:** When adding new CI pipelines with path rules, ensure the initial commit includes changes to those paths.
+
+### Session Start Check
+
+At the start of any GitLab-related work:
+
+```bash
+# Verify glab is available
+which glab || brew install glab
+
+# Check we're authenticated
+glab auth status
+
+# Check pipeline status for current project
+glab ci status 2>/dev/null || echo "Not in a GitLab repo"
+```
+
+---
+
+## Registry Operations
+
+### GitLab Container Registry
+
+```bash
+# Login to registry
+docker login registry.gitlab.com
+
+# Image naming convention
+registry.gitlab.com/<namespace>/<project>/<image>:<tag>
+
+# Example
+registry.gitlab.com/barkleyfarm2/bfinfrastructure/infisical-mcp:latest
+```
+
+### k8s Registry Secret
+
+For k3s to pull from GitLab Container Registry:
+
+```bash
+kubectl create secret docker-registry gitlab-registry \
+  --namespace=<namespace> \
+  --docker-server=registry.gitlab.com \
+  --docker-username=<deploy-token-or-user> \
+  --docker-password=<token>
+```
+
+Then reference in deployment:
+```yaml
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: gitlab-registry
+```

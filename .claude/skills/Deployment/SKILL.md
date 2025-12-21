@@ -43,6 +43,78 @@ These are non-negotiable. Deployment BLOCKS until requirements are met:
 | Secrets in Vault | No hardcoded secrets | YES |
 | Image in Registry | Container image pushed | YES |
 
+## Docker Image Pre-Flight Checks
+
+Before deploying ANY Docker image to production:
+
+| Check | Requirement | Why |
+|-------|-------------|-----|
+| Built via CI/CD | Image built by GitLab pipeline, NOT local machine | Reproducibility |
+| No runtime downloads | No `npx`, `bunx`, `pip install` at container start | Startup speed, reliability |
+| Credentials externalized | Secrets from k8s Secret or Infisical, NOT baked in | Security |
+| Health checks match startup | Liveness probe delay >= startup time | Prevent crash loops |
+| Pre-installed dependencies | All packages installed at build time | Deterministic behavior |
+| Observability tools available | `glab ci status` works before waiting | No blind waiting |
+
+### Docker Anti-Patterns (BLOCKED)
+
+**NEVER do these without explicit user override:**
+
+```yaml
+# ❌ BLOCKED: Runtime package download
+ENTRYPOINT ["npx", "-y", "@some/package"]
+
+# ✅ CORRECT: Pre-installed at build time
+RUN npm install -g @some/package
+ENTRYPOINT ["package-binary"]
+```
+
+```yaml
+# ❌ BLOCKED: Credentials in Dockerfile
+ENV API_KEY="sk-abc123..."
+
+# ✅ CORRECT: Injected at runtime
+envFrom:
+  - secretRef:
+      name: my-credentials
+```
+
+```yaml
+# ❌ BLOCKED: Local build to prod
+docker build -t registry.example.com/app:latest .
+docker push registry.example.com/app:latest
+
+# ✅ CORRECT: CI/CD builds and pushes
+# .gitlab-ci.yml handles build + push
+```
+
+### CI Pipeline Rules Gotcha
+
+**CRITICAL:** When creating pipelines with path-based rules, ensure triggering commits match:
+
+```yaml
+# This rule requires changes to docker/app/**
+rules:
+  - if: $CI_COMMIT_BRANCH == "main"
+    changes:
+      - docker/app/**/*
+
+# If you only change .gitlab-ci.yml, pipeline WON'T trigger!
+# Solution: Include a change to the docker/ folder
+```
+
+### Observability Before Waiting
+
+**NEVER blindly wait for pipelines. Always check status first:**
+
+```bash
+# ✅ CORRECT: Check before waiting
+glab ci status  # See if pipeline is running/passed/failed
+
+# ❌ BLOCKED: Blind waiting
+sleep 90  # Hope it works...
+```
+
 ## Examples
 
 ### Example 1: Standard Deployment
