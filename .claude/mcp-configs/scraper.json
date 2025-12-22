@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "brightdata": {
+      "command": "bunx",
+      "args": [
+        "-y",
+        "@brightdata/mcp"
+      ],
+      "env": {
+        "API_TOKEN": "${BRIGHTDATA_API_KEY}"
+      },
+      "description": "CAPTCHA solving, bot detection bypass, advanced web scraping with residential proxies"
+    },
+    "apify": {
+      "command": "bunx",
+      "args": [
+        "@apify/actors-mcp-server"
+      ],
+      "env": {
+        "APIFY_TOKEN": "${APIFY_TOKEN}"
+      },
+      "description": "Pre-built scrapers for social media, e-commerce, and specialized sites. RAG-optimized content extraction."
+    },
+    "playwright": {
+      "command": "bunx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "description": "Browser automation for JavaScript-heavy sites, form filling, screenshots, and visual debugging"
+    }
+  }
+}
