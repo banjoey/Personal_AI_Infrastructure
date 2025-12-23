@@ -58,12 +58,56 @@ User: "Deploy unifi-mcp to k3s"
 → Tests MCP connectivity
 ```
 
+## MANDATORY Pre-Deployment Checklist
+
+**STOP. Before ANY infrastructure change, complete this checklist:**
+
+### 1. Research First (NOT from training data)
+- [ ] **Fetch current documentation** for the tool/chart being used
+  - Use WebFetch on official docs
+  - Check for version-specific requirements
+  - Don't assume training data is correct
+- [ ] **Find a WORKING example** in this cluster
+  - What similar service is already working?
+  - How is it configured? (Ingress vs IngressRoute? Which annotations?)
+  - Use `kubectl get <resource> -o yaml` to examine working configs
+
+### 2. Understand Before Applying
+- [ ] **Compare configurations** between working example and what you're creating
+  - What's different? Why?
+  - If you can't explain the difference, research it
+- [ ] **Identify required annotations** for this cluster's setup
+  - external-dns: needs `external-dns.alpha.kubernetes.io/target` for Traefik sources
+  - Traefik: check if Ingress or IngressRoute is the working pattern
+  - TLS: check TLSStore default vs certResolver
+
+### 3. Define Verification Steps BEFORE Deploying
+- [ ] How will you verify the deployment worked?
+- [ ] What's the expected HTTP response code?
+- [ ] What should DNS resolve to?
+- [ ] What should ArgoCD status show AND what should actual resource state be?
+
+### 4. After Applying - Verify Actual State
+- [ ] **Check actual resource state**, not just ArgoCD status
+  ```bash
+  # Don't trust "Synced" - verify the actual resource
+  kubectl get <resource> -o yaml | grep <changed-field>
+  ```
+- [ ] **Test the endpoint** - curl the actual URL
+- [ ] **If it doesn't work** - Research WHY before trying alternatives
+  - Don't blame tools
+  - Check your configuration against working examples
+  - Fetch documentation
+
+---
+
 ## Core Principles
 
 ### 1. GitOps Only
 - **ALL deployments via ArgoCD** - No direct `kubectl apply` for production
 - **Git is source of truth** - Changes committed, then synced
 - **No manual drift** - ArgoCD self-heals
+- **Verify sync actually applied** - "Synced" status is not enough; check actual resource state
 
 ### 2. Standardized Patterns
 All deployments follow the same structure:
@@ -133,6 +177,75 @@ Service unreachable?
 └── NetworkPolicy blocking?
     └── kubectl get networkpolicy
 ```
+
+## Known Working Patterns (This Cluster)
+
+**These are TESTED patterns for the barkleyfarm k3s cluster. Use these, don't improvise.**
+
+### Exposing Internal Services (*.op.barkleyfarm.com)
+
+**USE: Standard Kubernetes Ingress (NOT Traefik IngressRoute)**
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {service}-ingress
+  namespace: {namespace}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: {service}.op.barkleyfarm.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {service}
+                port:
+                  number: {port}
+```
+
+**Why not IngressRoute?** IngressRoutes have routing issues in this cluster. Standard Ingress works reliably. All MCPs use this pattern.
+
+### TLS for Internal Services
+
+**USE: Default TLSStore (wildcard cert)**
+- The cluster has a wildcard cert: `wildcard-op-barkleyfarm-com-tls`
+- TLSStore `default` in traefik namespace references it
+- Just set `traefik.ingress.kubernetes.io/router.tls: "true"` - no secretName needed
+
+**DON'T USE: certResolver: letsencrypt** for internal domains (Let's Encrypt can't verify internal domains)
+
+### External-DNS for Internal Services
+
+**Required annotation for Traefik sources:**
+```yaml
+annotations:
+  external-dns.alpha.kubernetes.io/target: "10.0.20.15"  # Traefik LB IP
+```
+
+Without this annotation, external-dns can generate DNS records for Ingress but NOT for IngressRoutes.
+
+### ArgoCD Sync Verification
+
+**Don't trust "Synced" status alone:**
+```bash
+# Check what revision ArgoCD is using
+kubectl get application {app} -n argocd -o jsonpath='{.status.sync.revision}'
+
+# Compare with latest git commit
+cd ~/proj/bfinfrastructure && git log --oneline -1
+
+# Verify actual resource state
+kubectl get {resource} -o yaml | grep {changed-field}
+```
+
+---
 
 ## Related Skills
 
