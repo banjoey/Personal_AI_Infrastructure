@@ -226,18 +226,36 @@ Then check status with `mcp__unifi__unifi_batch_status`.
 - Cloud accounts with MFA don't work with aiounifi API
 - Credentials in `~/.config/.env`
 
-### MCP Configuration
-Located at project root: `bfinfrastructure/.mcp.json`
+### MCP Configuration (k3s Deployment)
+
+UniFi MCP runs on k3s via mcp-proxy pattern (like other infrastructure MCPs).
+
+**Endpoint:** `https://mcp-unifi.op.barkleyfarm.com/mcp`
+
+**Project config** (`bfinfrastructure/.mcp.json`):
 ```json
 {
   "mcpServers": {
     "unifi": {
-      "command": "uv",
-      "args": ["--directory", "/path/to/unifi-network-mcp", "run", "python", "-m", "src.main"]
+      "command": "/usr/local/bin/mcp-proxy",
+      "args": ["--transport", "streamablehttp", "https://mcp-unifi.op.barkleyfarm.com/mcp"],
+      "description": "UniFi network device management via k3s."
     }
   }
 }
 ```
+
+**k3s Resources:**
+- Namespace: `unifi-mcp`
+- Image: `registry.gitlab.com/barkleyfarm2/bfinfrastructure/unifi-mcp:latest`
+- Source: `banjoey/unifi-network-mcp` fork (feature/add-delete-network-wlan-tools branch)
+- Secrets: `unifi-credentials` (host, username, password, etc.)
+
+**Infrastructure Files:**
+- Dockerfile: `bfinfrastructure/docker/unifi-mcp/Dockerfile`
+- k8s: `bfinfrastructure/k8s/unifi-mcp/deployment.yaml`
+- ArgoCD: `bfinfrastructure/k8s/argocd/applications/unifi-mcp.yaml`
+- CI: `.gitlab-ci.yml` (build:unifi-mcp job)
 
 ## Integration
 

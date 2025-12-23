@@ -169,11 +169,8 @@ Task({ subagent_type: "[researcher-type-B]", description: "Query 10 [researcher-
 ...
 
 ## Unique Insights
-**From Perplexity Research (Web/Current):**
-- Novel findings from broad web search
-
 **From Claude Research (Academic/Detailed):**
-- Deep analytical insights
+- Deep analytical insights from WebSearch
 
 **From Gemini Research (Multi-Perspective):**
 - Cross-domain connections and synthesis
@@ -308,8 +305,8 @@ Create a comprehensive report that:
 
 ### [Topic Area 1]
 **High Confidence:**
-- Finding X (Sources: perplexity-research, claude-research)
-- Finding Y (Sources: perplexity-research, claude-research)
+- Finding X (Sources: gemini-research, claude-research)
+- Finding Y (Sources: gemini-research, claude-research)
 
 **Medium Confidence:**
 - Finding Z (Source: claude-research)
@@ -318,7 +315,7 @@ Create a comprehensive report that:
 ...
 
 ## Source Attribution
-- **Perplexity-Research**: [summary of unique contributions]
+- **Gemini-Research**: [summary of unique contributions]
 - **Claude-Research**: [summary of unique contributions]
 
 ## Conflicting Information

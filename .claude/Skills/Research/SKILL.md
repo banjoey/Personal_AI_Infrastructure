@@ -5,15 +5,35 @@ description: Comprehensive research, analysis, and content extraction system. Mu
 
 # Research Skill
 
+## Architecture: Agent-Pool Pattern
+
+This skill uses a **lean orchestrator + heavy agent** approach:
+
+```
+Your Session (Orchestrator)
+├── Built-in tools: WebSearch, WebFetch (FREE, always available)
+└── 90% of research tasks complete here
+    ↓ (if advanced scraping needed)
+    Spawn @scraper agent
+    ├── Loads: BrightData, Apify, Playwright MCPs
+    ├── Does heavy lifting
+    └── Returns results and terminates
+```
+
+**Benefits:**
+- Main session stays fast (no heavy MCP startup)
+- Only pay for scraping tools when actually needed
+- Clean separation of concerns
+
 ## API Keys Required
 
-**This skill works best with these optional API keys configured in `~/.env`:**
+**This skill works best with these optional API keys configured in `~/.config/.env`:**
 
 | Feature | API Key | Get It From |
 |---------|---------|-------------|
-| Perplexity Research | `PERPLEXITY_API_KEY` | https://perplexity.ai/settings/api |
 | Gemini Research | `GOOGLE_API_KEY` | https://aistudio.google.com/app/apikey |
-| BrightData Scraping | `BRIGHTDATA_API_KEY` | https://brightdata.com |
+| BrightData Scraping | `BRIGHTDATA_API_KEY` | https://brightdata.com (used by @scraper agent) |
+| Apify Scraping | `APIFY_TOKEN` | https://apify.com (used by @scraper agent) |
 
 **Works without API keys:**
 - Claude-based research (uses built-in WebSearch)
@@ -28,58 +48,53 @@ description: Comprehensive research, analysis, and content extraction system. Mu
 
 **When user requests comprehensive parallel research:**
 Examples: "do research on X", "research this topic", "find information about Y", "investigate this subject"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/conduct.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
 → **EXECUTE:** Parallel multi-agent research using available researcher agents
 
 **When user requests Claude-based research (FREE - no API keys):**
 Examples: "use claude for research", "claude research on X", "use websearch to research Y"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/claude-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/claude-research.md`
 → **EXECUTE:** Intelligent query decomposition with Claude's WebSearch
-
-**When user requests Perplexity research (requires PERPLEXITY_API_KEY):**
-Examples: "use perplexity to research X", "perplexity research on Y"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/perplexity-research.md`
-→ **EXECUTE:** Fast web search with query decomposition via Perplexity API
 
 **When user requests interview preparation:**
 Examples: "prepare interview questions for X", "interview research on Y"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/interview-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/interview-research.md`
 → **EXECUTE:** Interview prep with diverse question generation
 
 ### Content Retrieval Workflows
 
 **When user indicates difficulty accessing content:**
 Examples: "can't get this content", "site is blocking me", "CAPTCHA blocking"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/retrieve.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/retrieve.md`
 → **EXECUTE:** Escalation through layers (WebFetch → BrightData → Apify)
 
 **When user provides YouTube URL:**
 Examples: "get this youtube video", "extract from youtube URL"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/youtube-extraction.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/youtube-extraction.md`
 → **EXECUTE:** YouTube content extraction using fabric -y
 
 **When user requests web scraping:**
 Examples: "scrape this site", "extract data from this website"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/web-scraping.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/web-scraping.md`
 → **EXECUTE:** Web scraping techniques and tools
 
 ### Fabric Pattern Processing
 
 **When user requests Fabric pattern usage:**
 Examples: "use fabric to X", "create threat model", "summarize with fabric"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/fabric.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/fabric.md`
 → **EXECUTE:** Auto-select best pattern from 242+ Fabric patterns
 
 ### Content Enhancement Workflows
 
 **When user requests content enhancement:**
 Examples: "enhance this content", "improve this draft"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/enhance.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/enhance.md`
 → **EXECUTE:** Content improvement and refinement
 
 **When user requests knowledge extraction:**
 Examples: "extract knowledge from X", "get insights from this"
-→ **READ:** `${PAI_DIR}/Skills/research/workflows/extract-knowledge.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/extract-knowledge.md`
 → **EXECUTE:** Knowledge extraction and synthesis
 
 ---
@@ -105,9 +120,8 @@ Examples: "extract knowledge from X", "get insights from this"
 
 ### Available Research Agents
 
-Check `${PAI_DIR}/Agents/` for agents with "researcher" in their name:
+Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - `claude-researcher` - Uses Claude's WebSearch (FREE, no API key needed)
-- `perplexity-researcher` - Uses Perplexity API (requires PERPLEXITY_API_KEY)
 - `gemini-researcher` - Uses Gemini API (requires GOOGLE_API_KEY)
 
 ### Speed Benefits
@@ -121,27 +135,34 @@ Check `${PAI_DIR}/Agents/` for agents with "researcher" in their name:
 
 ## Intelligent Content Retrieval
 
-### Three-Layer Escalation System
+### Two-Layer Escalation System (Agent-Pool Pattern)
 
 **Layer 1: Built-in Tools (Try First - FREE)**
 - WebFetch - Standard web content fetching
 - WebSearch - Search engine queries
 - When to use: Default for all content retrieval
+- **Handles 90% of requests successfully**
 
-**Layer 2: BrightData MCP (requires BRIGHTDATA_API_KEY)**
-- CAPTCHA solving via Scraping Browser
-- Advanced JavaScript rendering
-- When to use: Bot detection blocking, CAPTCHA protection
+**Layer 2: Spawn @scraper Agent (On-Demand)**
+- Agent loads BrightData, Apify, Playwright MCPs
+- CAPTCHA solving, bot detection bypass
+- Social media scrapers (Instagram, LinkedIn, etc.)
+- JavaScript SPA rendering
+- When to use: Layer 1 blocked or failed
 
-**Layer 3: Apify MCP (requires Apify account)**
-- Specialized site scrapers (Instagram, LinkedIn, etc.)
-- Complex extraction logic
-- When to use: Layers 1 and 2 both failed
+**How to spawn:**
+```typescript
+Task({
+  subagent_type: "scraper",
+  prompt: "URL: ..., Error: ..., Extract: ...",
+  model: "sonnet"
+})
+```
 
 **Critical Rules:**
-- Always try simplest approach first (Layer 1)
-- Escalate only when previous layer fails
-- Document which layers were used and why
+- Always try Layer 1 first (free, fast)
+- Only spawn agent when Layer 1 fails
+- Agent returns results and terminates (no session impact)
 
 ---
 
@@ -199,7 +220,7 @@ ${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/
 
 ### Permanent Storage (History)
 ```
-${PAI_DIR}/History/research/YYYY-MM/YYYY-MM-DD_[topic]/
+${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD_[topic]/
 ├── README.md
 ├── research-report.md
 └── metadata.json
@@ -222,7 +243,7 @@ ${PAI_DIR}/History/research/YYYY-MM/YYYY-MM-DD_[topic]/
 |----------|------|-----------------|
 | Multi-Source Research | `workflows/conduct.md` | Varies by agent |
 | Claude Research | `workflows/claude-research.md` | None (FREE) |
-| Perplexity Research | `workflows/perplexity-research.md` | PERPLEXITY_API_KEY |
+| Gemini Research | `workflows/gemini-research.md` | GOOGLE_API_KEY |
 | Interview Prep | `workflows/interview-research.md` | None |
 | Content Retrieval | `workflows/retrieve.md` | Optional: BRIGHTDATA_API_KEY |
 | YouTube Extraction | `workflows/youtube-extraction.md` | None (uses Fabric) |

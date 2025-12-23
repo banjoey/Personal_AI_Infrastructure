@@ -335,6 +335,81 @@ rules:
 
 ---
 
+## DevGuard Enforcement (MANDATORY - Constitutional)
+
+**CRITICAL: Research before coding is NOT optional. It's a constitutional requirement.**
+
+This exists because:
+1. Training data has a cutoff - knowledge may be outdated
+2. Libraries update constantly - security fixes, new APIs, deprecations
+3. Best practices evolve - what was right in 2023 may be wrong in 2025
+4. Memory is not documentation - official docs are the source of truth
+
+### Mandatory Research Todo Pattern
+
+**BEFORE writing ANY significant code, you MUST create research todos FIRST:**
+
+```
+User: "Implement JWT authentication"
+
+REQUIRED RESPONSE:
+1. TodoWrite:
+   - "Research JWT best practices 2025"
+   - "Check jsonwebtoken/jose library current API"
+   - "Review OWASP authentication guidance"
+2. Complete research using WebSearch/WebFetch
+3. Document findings
+4. ONLY THEN proceed to Write/Edit code files
+```
+
+### Triggers That Require Research
+
+| Trigger | Required Research |
+|---------|-------------------|
+| Adding dependency | Check maintenance, CVEs, license, alternatives |
+| Implementing feature | Current framework patterns, best practices |
+| Security-sensitive code | OWASP guidance, current recommendations |
+| API integration | Official docs for current version |
+| Database/ORM code | Current query patterns, injection prevention |
+
+### Warning Phrases (STOP and VERIFY)
+
+If you catch yourself thinking:
+- "I'm pretty sure this is how you do it..."
+- "I've done this before..."
+- "This should work..."
+- "I know how to implement this..."
+
+**STOP.** These phrases indicate you're about to code from memory instead of verified knowledge.
+
+### Enforcement Checklist
+
+Before ANY Write/Edit to code files (.ts, .js, .py, .tsx, .jsx, etc.):
+
+```
+[ ] Created research todos FIRST
+[ ] Completed research with WebSearch/WebFetch
+[ ] Verified library APIs are current
+[ ] Checked for deprecated patterns
+[ ] Reviewed security considerations (if applicable)
+```
+
+**VIOLATION:** Writing code without research todos = DevGuard constitutional violation.
+
+### The DevGuard Principle
+
+> "The documentation is smarter than your training data."
+
+The 2 minutes spent verifying current best practices saves:
+- Hours debugging subtle issues
+- Security vulnerabilities from outdated patterns
+- Technical debt from deprecated APIs
+- Embarrassment when code review catches outdated approaches
+
+**See DevGuard skill for full workflows: PreCode, DependencyCheck, SecurityReview**
+
+---
+
 ## Permission to Fail (Always Active)
 
 **Anthropic's #1 fix for hallucinations: Explicitly allow "I don't know" responses.**

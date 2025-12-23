@@ -1,6 +1,31 @@
 # Retrieve Workflow
 
-Intelligent multi-layer content retrieval system for DIFFICULT content retrieval. Uses built-in tools (WebFetch, WebSearch), BrightData MCP (CAPTCHA handling, advanced scraping), and Apify MCP (RAG browser, Actor ecosystem). USE ONLY WHEN user indicates difficulty: 'can't get this', 'having trouble', 'site is blocking', 'protected site', 'keeps giving CAPTCHA', 'won't let me scrape'. DO NOT use for simple 'read this page' or 'get content from' without indication of difficulty.
+Intelligent multi-layer content retrieval system for DIFFICULT content retrieval. Uses built-in tools (WebFetch, WebSearch) for 90% of cases, then spawns a dedicated **scraper agent** with heavy-duty MCPs (BrightData, Apify, Playwright) only when needed. USE ONLY WHEN user indicates difficulty: 'can't get this', 'having trouble', 'site is blocking', 'protected site', 'keeps giving CAPTCHA', 'won't let me scrape'. DO NOT use for simple 'read this page' or 'get content from' without indication of difficulty.
+
+## Agent-Pool Architecture
+
+This workflow uses a **lean orchestrator + heavy agent** pattern:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  YOUR SESSION (Orchestrator)                                │
+│  - No heavy scraping MCPs loaded                            │
+│  - Fast startup, lean context                               │
+├─────────────────────────────────────────────────────────────┤
+│  Layer 1: WebFetch + WebSearch (built-in, FREE)             │
+│  ↓ If blocked/failed                                        │
+│  Layer 2: Spawn @scraper agent                              │
+│           - Loads BrightData, Apify, Playwright MCPs        │
+│           - Does the heavy lifting                          │
+│           - Returns results and terminates                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Benefits:**
+- Main session stays fast (no heavy MCP startup)
+- Only pay for scraping tools when actually needed
+- Scraper agent has full context for the task
+- Clean separation of concerns
 
 ## 🎯 Load Full PAI Context
 
@@ -43,38 +68,34 @@ This provides access to:
 
 ## 🎯 Intelligent Retrieval Strategy
 
-The Retrieve skill uses a **3-layer fallback strategy** to ensure content can always be retrieved:
+The Retrieve skill uses a **2-layer fallback strategy** with agent-pool pattern:
 
 ```
-Layer 1: Built-in Tools (Fast, Simple)
+Layer 1: Built-in Tools (Fast, Simple, FREE)
   ↓ (If blocked, rate-limited, or fails)
-Layer 2: BrightData MCP (CAPTCHA handling, advanced scraping)
-  ↓ (If specialized scraping needed)
-Layer 3: Apify MCP (RAG browser, Actor ecosystem)
+Layer 2: Spawn @scraper Agent (Heavy-duty tools)
+         - Agent loads BrightData, Apify, Playwright MCPs
+         - Agent handles CAPTCHA, bot detection, specialized extraction
+         - Agent returns results and terminates
 ```
 
 ### Decision Tree: Which Layer to Use?
 
-**Start with Layer 1 (Built-in) if:**
+**Use Layer 1 (Built-in) - TRY THIS FIRST:**
 - Simple public webpage
 - No known bot detection
 - Standard HTML content
 - Quick one-off fetch
+- **90% of requests succeed here**
 
-**Use Layer 2 (BrightData) if:**
+**Spawn @scraper Agent (Layer 2) if:**
 - Layer 1 blocked or failed
 - Known bot detection (CloudFlare, etc.)
 - CAPTCHA protection
 - Rate limiting encountered
-- Multiple pages from same domain
-- Search engine results needed (Google, Bing, Yandex)
-
-**Use Layer 3 (Apify) if:**
 - Need specialized extraction (social media, e-commerce)
-- Complex JavaScript rendering required
-- Specific Actor exists for the site
-- Layer 1 and 2 both failed
-- Need RAG-optimized content (markdown format for LLM processing)
+- JavaScript-heavy SPA that WebFetch can't parse
+- Need batch scraping from same domain
 
 ## Layer 1: Built-in Tools
 
@@ -116,162 +137,110 @@ WebSearch({
 - Need specific search engine (Google, Bing, Yandex)
 → **Escalate to Layer 2 (BrightData search_engine)**
 
-## Layer 2: BrightData MCP
+## Layer 2: Spawn @scraper Agent
 
-### scrape_as_markdown Tool
+When Layer 1 fails, spawn the dedicated scraper agent instead of using heavy MCPs directly in your session.
 
-**Best for:** Sites with bot protection, CAPTCHA, JavaScript rendering
+### How to Spawn the Scraper Agent
 
-**Key Features:**
-- Bypasses CloudFlare, bot detection, CAPTCHAs
-- Returns clean markdown (perfect for LLM consumption)
-- Handles JavaScript-heavy sites
-- Residential proxy network
-
-**Usage:**
 ```typescript
-// Single URL scraping with bot protection bypass
-mcp__Brightdata__scrape_as_markdown({
-  url: "https://protected-site.com/article"
-})
+// Spawn scraper agent with full context
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Retrieve content from: ${url}
 
-// Multiple URLs in parallel (up to 10)
-mcp__Brightdata__scrape_batch({
-  urls: [
-    "https://site.com/page1",
-    "https://site.com/page2",
-    "https://site.com/page3"
-  ]
+    Context: Layer 1 (WebFetch) failed with: ${error_message}
+
+    Try these approaches in order:
+    1. BrightData scrape_as_markdown (for CAPTCHA/bot detection)
+    2. Apify RAG browser (for complex sites)
+    3. Playwright (for JavaScript SPAs needing interaction)
+
+    Return:
+    - Extracted content in markdown format
+    - Which method succeeded
+    - Any errors encountered
+  `,
+  model: "sonnet"
 })
 ```
 
-**When to use:**
-- Layer 1 WebFetch failed with blocking/CAPTCHA
-- Known protected sites (CloudFlare, etc.)
-- Need batch scraping from same domain
-- Want markdown output for LLM processing
+### When to Spawn the Agent
 
-**When it fails:**
-- Site requires very specialized extraction logic
-- Need social media specific scraping
-→ **Escalate to Layer 3 (Apify Actors)**
+**Spawn @scraper when:**
+- WebFetch returns 403, 429, or empty content
+- CAPTCHA or bot detection message received
+- Site is known to be protected (CloudFlare, etc.)
+- Need specialized extraction (Instagram, LinkedIn, Amazon)
+- JavaScript-heavy SPA that doesn't render with WebFetch
 
-### search_engine Tool
+### What the Agent Has Access To
 
-**Best for:** Getting search results from Google, Bing, Yandex
+The scraper agent loads these MCPs (which are NOT in your main session):
 
-**Usage:**
+| MCP | Best For | Key Tools |
+|-----|----------|-----------|
+| **BrightData** | CAPTCHA bypass, protected sites | `scrape_as_markdown`, `scrape_batch`, `search_engine` |
+| **Apify** | Social media, e-commerce, RAG content | `call-actor`, `search-actors`, `rag-web-browser` |
+| **Playwright** | JS SPAs, form filling, screenshots | `browser_navigate`, `browser_click`, `browser_snapshot` |
+
+### Example: Protected Site Scraping
+
 ```typescript
-// Search Google for results
-mcp__Brightdata__search_engine({
-  engine: "google",
-  query: "React 19 server components"
-})
+// Layer 1 failed - spawn agent
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    URL: https://cloudflare-protected-site.com/article
 
-// Search multiple engines in parallel
-mcp__Brightdata__search_engine_batch({
-  queries: [
-    { engine: "google", query: "React 19 features" },
-    { engine: "bing", query: "React 19 features" },
-    { engine: "yandex", query: "React 19 features" }
-  ]
+    WebFetch failed with: "Access denied - CloudFlare protection"
+
+    Use BrightData to bypass protection and extract the article content.
+    Return markdown format.
+  `,
+  model: "sonnet"
 })
 ```
 
-**Output format:**
-- Google: JSON with structured results
-- Bing/Yandex: Markdown with URLs, titles, descriptions
+### Example: Social Media Extraction
 
-**When to use:**
-- Need search engine results (not just website content)
-- Want multiple search engines for comprehensive coverage
-- Layer 1 WebSearch insufficient
-
-## Layer 3: Apify MCP
-
-### RAG Web Browser Actor
-
-**Best for:** Content optimized for RAG/LLM consumption, general browsing
-
-**Key Features:**
-- Google Search + scraping in one Actor
-- Returns markdown optimized for LLM context
-- Can scrape individual URLs or search results
-- Top N results from search
-
-**Usage:**
 ```typescript
-// Search Google and scrape top 3 results
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "React 19 server components",
-  maxResults: 3,
-  outputFormats: ["markdown"]
-})
+// Need Instagram data - spawn agent with Apify
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Extract the last 10 posts from Instagram user: @exampleuser
 
-// Scrape specific URL (query is URL)
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "https://react.dev/blog/2024/12/05/react-19",
-  maxResults: 1,
-  outputFormats: ["markdown", "text", "html"]
+    Use Apify's instagram-scraper Actor.
+    Return: post text, image URLs, engagement metrics, timestamps
+  `,
+  model: "sonnet"
 })
 ```
 
-**When to use:**
-- Need content formatted for LLM consumption
-- Want search + scraping in one operation
-- Layer 1 and 2 failed or insufficient
+### Example: JavaScript SPA
 
-**Output:** Returns datasetId for full results
-
-**To get full output:**
 ```typescript
-mcp__Apify__get-actor-output({
-  datasetId: "abc123xyz",
-  fields: "markdown,url,title"  // Optional: specific fields
+// SPA that needs browser interaction
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    URL: https://spa-site.com/dashboard
+
+    This is a React SPA. WebFetch returns empty content.
+
+    Use Playwright to:
+    1. Navigate to the URL
+    2. Wait for content to load
+    3. Take a snapshot
+    4. Extract the data table content
+
+    Return the extracted data in markdown table format.
+  `,
+  model: "sonnet"
 })
 ```
-
-### Specialized Actors
-
-**Best for:** Site-specific scraping (Instagram, Twitter, LinkedIn, etc.)
-
-**Finding Actors:**
-```typescript
-// Search for specialized Actor
-mcp__Apify__search-actors({
-  search: "instagram posts scraper",
-  limit: 10
-})
-
-// Get Actor details and input schema
-mcp__Apify__fetch-actor-details({
-  actor: "apify/instagram-scraper"
-})
-```
-
-**Using Actors (2-step workflow):**
-```typescript
-// Step 1: Get Actor info and input schema
-mcp__Apify__call-actor({
-  actor: "apify/instagram-scraper",
-  step: "info"
-})
-
-// Step 2: Run Actor with proper input
-mcp__Apify__call-actor({
-  actor: "apify/instagram-scraper",
-  step: "call",
-  input: {
-    username: "example",
-    resultsLimit: 10
-  }
-})
-```
-
-**When to use:**
-- Specialized site needs (social media, e-commerce)
-- Layer 1 and 2 failed
-- Need platform-specific extraction logic
 
 ## 🔄 Complete Retrieval Workflow
 
@@ -282,27 +251,22 @@ mcp__Apify__call-actor({
 **Execution:**
 
 ```typescript
-// 1. Try Layer 1 (Built-in) first
+// 1. Try Layer 1 (Built-in) first - this works 90% of the time
 WebFetch({
   url: "https://example.com/article",
   prompt: "Extract the main article content, title, author, and published date"
 })
 
-// 2. If Layer 1 fails (blocked/CAPTCHA):
-mcp__Brightdata__scrape_as_markdown({
-  url: "https://example.com/article"
-})
-
-// 3. If Layer 2 fails (needs specialized extraction):
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "https://example.com/article",
-  maxResults: 1,
-  outputFormats: ["markdown"]
-})
-
-// 4. Get full output from Apify:
-mcp__Apify__get-actor-output({
-  datasetId: "[from previous response]"
+// 2. If Layer 1 fails (blocked/CAPTCHA) - spawn scraper agent
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Retrieve article from: https://example.com/article
+    WebFetch failed with: [error message]
+    Extract: title, author, published date, main content
+    Return in markdown format.
+  `,
+  model: "sonnet"
 })
 ```
 
@@ -313,30 +277,31 @@ mcp__Apify__get-actor-output({
 **Execution:**
 
 ```typescript
-// 1. Try Layer 1 for search:
+// 1. Use Layer 1 for search:
 WebSearch({
   query: "React 19 features documentation",
   allowed_domains: ["react.dev"]
 })
 // Extract URLs from results
 
-// 2. Fetch each URL with Layer 1:
+// 2. Fetch each URL with Layer 1 (parallel):
 WebFetch({ url: url1, prompt: "Extract main content" })
 WebFetch({ url: url2, prompt: "Extract main content" })
-// ... (can run in parallel)
+// ... (run in parallel)
 
-// 3. If any Layer 1 fetches fail, use Layer 2 batch:
-mcp__Brightdata__scrape_batch({
-  urls: [url1, url2, url3, url4, url5]
-})
+// 3. If any fetches fail, spawn agent for failed URLs only:
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Batch scrape these URLs that WebFetch couldn't handle:
+    - ${failedUrl1}
+    - ${failedUrl2}
 
-// 4. OR use Layer 3 for all-in-one search + scrape:
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "React 19 features documentation",
-  maxResults: 5,
-  outputFormats: ["markdown"]
+    Use BrightData batch scraping.
+    Return content in markdown format for each URL.
+  `,
+  model: "sonnet"
 })
-// Then get full output with get-actor-output
 ```
 
 ### Example: Protected Site Scraping
@@ -346,56 +311,67 @@ mcp__Apify__apify-slash-rag-web-browser({
 **Execution:**
 
 ```typescript
-// Skip Layer 1 (known to fail on protected sites)
-// Start with Layer 2:
-mcp__Brightdata__scrape_as_markdown({
-  url: "https://cloudflare-protected-site.com"
-})
+// Known protected site - spawn agent directly (skip Layer 1)
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Scrape protected site: https://cloudflare-protected-site.com
 
-// If Layer 2 fails, try Layer 3:
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "https://cloudflare-protected-site.com",
-  maxResults: 1,
-  outputFormats: ["markdown"]
+    Site has CloudFlare protection. Use BrightData to bypass.
+    If BrightData fails, try Apify RAG browser.
+    Return content in markdown format.
+  `,
+  model: "sonnet"
 })
 ```
 
 ## 📊 Layer Comparison Matrix
 
-| Feature | Layer 1 (Built-in) | Layer 2 (BrightData) | Layer 3 (Apify) |
-|---------|-------------------|----------------------|-----------------|
-| **Speed** | Fast (< 5s) | Medium (10-30s) | Slower (30-60s) |
-| **Bot Detection Bypass** | ❌ No | ✅ Yes | ✅ Yes |
-| **CAPTCHA Handling** | ❌ No | ✅ Yes | ✅ Yes |
-| **JavaScript Rendering** | ⚠️ Limited | ✅ Full | ✅ Full |
-| **Batch Operations** | Manual | ✅ Up to 10 | ✅ Unlimited |
-| **Search Integration** | ✅ Basic | ✅ Multi-engine | ✅ Google only |
-| **Markdown Output** | ✅ Yes | ✅ Yes | ✅ Optimized |
-| **Specialized Extraction** | ❌ No | ❌ No | ✅ Yes (Actors) |
-| **Cost** | Free | Paid | Paid |
-| **Best For** | Simple pages | Protected sites | Specialized scraping |
+| Feature | Layer 1 (Built-in) | Layer 2 (@scraper Agent) |
+|---------|-------------------|--------------------------|
+| **Speed** | Fast (< 5s) | Slower (10-60s agent startup + work) |
+| **Bot Detection Bypass** | ❌ No | ✅ Yes (via BrightData) |
+| **CAPTCHA Handling** | ❌ No | ✅ Yes (via BrightData) |
+| **JavaScript Rendering** | ⚠️ Limited | ✅ Full (via Playwright) |
+| **Batch Operations** | Manual parallel | ✅ BrightData batch (10), Apify unlimited |
+| **Social Media** | ❌ No | ✅ Yes (via Apify Actors) |
+| **Session Impact** | None (built-in) | None (isolated agent) |
+| **Cost** | Free | Paid (only when spawned) |
+| **Best For** | 90% of requests | Protected sites, SPAs, specialized extraction |
 
 ## 🚨 Error Handling & Escalation
 
-**Layer 1 Errors → Escalate to Layer 2:**
+**Layer 1 Errors → Spawn @scraper Agent:**
 - HTTP 403 (Forbidden)
 - HTTP 429 (Rate Limited)
 - HTTP 503 (Service Unavailable)
 - Empty content returned
 - CAPTCHA challenge detected
 - Bot detection messages
+- JavaScript-heavy SPA (empty/broken content)
 
-**Layer 2 Errors → Escalate to Layer 3:**
-- Scraping failed after retries
-- Site requires very specialized logic
-- Need social media specific extraction
-- Platform-specific data structures needed
-
-**Layer 3 Errors → Report to User:**
-- All layers exhausted
+**Agent Errors → Report to User:**
+- All methods exhausted (BrightData, Apify, Playwright all failed)
+- Site requires login/authentication
 - Site technically impossible to scrape
-- Requires manual intervention or login
 - Legal/ethical concerns with scraping
+
+**Agent Response Format:**
+The scraper agent should return:
+```markdown
+## Retrieval Result
+
+**URL:** https://example.com/page
+**Method Used:** BrightData scrape_as_markdown
+**Status:** Success
+
+## Content
+[extracted markdown content]
+
+## Errors Encountered
+- Layer 1 (WebFetch): 403 Forbidden - CloudFlare protection
+- BrightData: Success on first attempt
+```
 
 ## 📁 Scratchpad → History Pattern
 
@@ -483,26 +459,30 @@ ${PAI_DIR}/History/research/2025-10-26_react19-documentation/
 
 ## 🎯 Quick Reference Card
 
-**Start with Layer 1 (Built-in):**
+**Always Try Layer 1 First (Built-in):**
 - Simple public webpages
 - Quick one-off fetches
 - Basic search queries
+- **90% of requests succeed here**
 
-**Use Layer 2 (BrightData):**
-- Bot detection blocking Layer 1
-- CAPTCHA protection
-- Rate limiting encountered
-- Need batch scraping (2-10 URLs)
-- Search engine results needed
+**Spawn @scraper Agent When:**
+- Layer 1 blocked (403, 429, CAPTCHA)
+- Known protected site (CloudFlare, etc.)
+- JavaScript SPA with empty content
+- Social media extraction needed
+- Batch scraping required
 
-**Use Layer 3 (Apify):**
-- Specialized site scraping (social media, e-commerce)
-- Layer 1 and 2 both failed
-- Need RAG-optimized markdown
-- Complex extraction logic required
+**How to Spawn:**
+```typescript
+Task({
+  subagent_type: "scraper",
+  prompt: "URL: ..., Error: ..., Extract: ...",
+  model: "sonnet"
+})
+```
 
 **Remember:**
-- Always try simplest approach first (Layer 1)
-- Escalate only when previous layer fails
-- Document which layers were used and why
-- Save valuable retrieved content to history, not scratchpad
+- Always try Layer 1 first (free, fast)
+- Agent spawns with its own MCPs (no impact on your session)
+- Agent terminates after returning results
+- Document which method succeeded for future reference

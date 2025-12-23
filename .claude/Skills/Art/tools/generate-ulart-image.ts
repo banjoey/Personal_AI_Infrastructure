@@ -23,32 +23,50 @@ import { extname, resolve } from "node:path";
 // ============================================================================
 
 /**
- * Load environment variables from ${PAI_DIR}/.env
- * This ensures API keys are available regardless of how the CLI is invoked
+ * Load environment variables from .env files
+ * Checks multiple locations in priority order:
+ * 1. ~/.config/.env (user's primary secret store)
+ * 2. ~/.claude/.env (PAI installation)
+ * Shell environment variables always take precedence
  */
 async function loadEnv(): Promise<void> {
-  const envPath = resolve(process.env.HOME!, '.claude/.env');
-  try {
-    const envContent = await readFile(envPath, 'utf-8');
-    for (const line of envContent.split('\n')) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const eqIndex = trimmed.indexOf('=');
-      if (eqIndex === -1) continue;
-      const key = trimmed.slice(0, eqIndex).trim();
-      let value = trimmed.slice(eqIndex + 1).trim();
-      // Remove surrounding quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
+  const envPaths = [
+    resolve(process.env.HOME!, '.config/.env'),
+    resolve(process.env.HOME!, '.claude/.env'),
+  ];
+
+  for (const envPath of envPaths) {
+    try {
+      const envContent = await readFile(envPath, 'utf-8');
+      for (const line of envContent.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        // Handle export VAR=value format
+        const exportMatch = trimmed.match(/^export\s+([^=]+)=(.*)$/);
+        let key: string;
+        let value: string;
+        if (exportMatch) {
+          key = exportMatch[1].trim();
+          value = exportMatch[2].trim();
+        } else {
+          const eqIndex = trimmed.indexOf('=');
+          if (eqIndex === -1) continue;
+          key = trimmed.slice(0, eqIndex).trim();
+          value = trimmed.slice(eqIndex + 1).trim();
+        }
+        // Remove surrounding quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        // Only set if not already defined (allow overrides from shell)
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
       }
-      // Only set if not already defined (allow overrides from shell)
-      if (!process.env[key]) {
-        process.env[key] = value;
-      }
+    } catch (error) {
+      // Silently continue if .env doesn't exist - check next location
     }
-  } catch (error) {
-    // Silently continue if .env doesn't exist - rely on shell env vars
   }
 }
 

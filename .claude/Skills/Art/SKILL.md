@@ -89,10 +89,10 @@ bun run ${PAI_DIR}/Skills/art/tools/generate-ulart-image.ts \
 | **flux** | Maximum quality |
 | **gpt-image-1** | Different interpretation |
 
-**API keys in:** `${PAI_DIR}/.env`
-- `REPLICATE_API_TOKEN` - Flux and Nano Banana
+**API keys in:** `~/.config/.env` (primary) or `~/.claude/.env` (fallback)
+- `GOOGLE_API_KEY` - Nano Banana Pro (Gemini 3 Pro Image) - **PRIMARY**
+- `REPLICATE_API_TOKEN` - Flux and Nano Banana (via Replicate)
 - `OPENAI_API_KEY` - GPT-image-1
-- `GOOGLE_API_KEY` - Nano Banana Pro
 - `REMOVEBG_API_KEY` - Background removal
 
 ---
