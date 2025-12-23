@@ -21,7 +21,7 @@ Major architectural improvements addressing GitHub issues #112, #113, #95, and #
 **Solution:** Created centralized path resolution library
 
 **New Files:**
-- `.claude/hooks/lib/pai-paths.ts` - Single source of truth for path resolution
+- `.claude/Hooks/lib/pai-paths.ts` - Single source of truth for path resolution
   - Exports: `PAI_DIR`, `HOOKS_DIR`, `SKILLS_DIR`, `AGENTS_DIR`, `HISTORY_DIR`
   - Smart detection: Uses `PAI_DIR` env var or defaults to `~/.claude`
   - Validation: Fails fast with clear errors if paths misconfigured
@@ -56,9 +56,9 @@ Major architectural improvements addressing GitHub issues #112, #113, #95, and #
   - Protected content for maintainers
   - FAQ and troubleshooting
 
-- `.claude/hooks/self-test.ts` - PAI health check system
+- `.claude/Hooks/self-test.ts` - PAI health check system
   - Tests 12 core guarantees
-  - Command: `bun ${PAI_DIR}/hooks/self-test.ts`
+  - Command: `bun ${PAI_DIR}/Hooks/self-test.ts`
   - Validates: directories, CORE skill, settings, agents, hooks
   - Clear pass/fail reporting
 
@@ -86,15 +86,15 @@ Major architectural improvements addressing GitHub issues #112, #113, #95, and #
   - Defines forbidden patterns (API keys, personal emails, private paths)
   - Documents Kai → PAI sync workflow
 
-- `.claude/hooks/validate-protected.ts` - Validation script
+- `.claude/Hooks/validate-protected.ts` - Validation script
   - Checks protected files for violations
   - Detects: API keys, personal data, private references
-  - Command: `bun .claude/hooks/validate-protected.ts`
+  - Command: `bun .claude/Hooks/validate-protected.ts`
   - Can check all files or only staged files (`--staged`)
 
-- `.claude/hooks/pre-commit.template` - Git pre-commit hook
+- `.claude/Hooks/pre-commit.template` - Git pre-commit hook
   - Automatically runs validation before commits
-  - Installation: `cp .claude/hooks/pre-commit.template .git/hooks/pre-commit`
+  - Installation: `cp .claude/Hooks/pre-commit.template .git/Hooks/pre-commit`
   - Prevents accidents
 
 - `PAI_SYNC_GUIDE.md` - Complete workflow documentation
@@ -154,8 +154,8 @@ All systems tested and verified:
 ✅ README.md
 ✅ PAI_CONTRACT.md
 ✅ SECURITY.md
-✅ .claude/hooks/lib/pai-paths.ts
-✅ .claude/hooks/self-test.ts
+✅ .claude/Hooks/lib/pai-paths.ts
+✅ .claude/Hooks/self-test.ts
 ✅ .pai-protected.json
 ✅ .claude/.env.example
 ✅ .claude/settings.json
@@ -175,13 +175,13 @@ All systems tested and verified:
 
 2. **Run self-test:**
    ```bash
-   bun .claude/hooks/self-test.ts
+   bun .claude/Hooks/self-test.ts
    ```
 
 3. **Install pre-commit hook (optional but recommended):**
    ```bash
-   cp .claude/hooks/pre-commit.template .git/hooks/pre-commit
-   chmod +x .git/hooks/pre-commit
+   cp .claude/Hooks/pre-commit.template .git/Hooks/pre-commit
+   chmod +x .git/Hooks/pre-commit
    ```
 
 4. **Read new documentation:**
@@ -198,8 +198,8 @@ All systems tested and verified:
 6. **Run validation:**
    ```bash
    cd ~/Projects/PAI
-   bun .claude/hooks/self-test.ts
-   bun .claude/hooks/validate-protected.ts
+   bun .claude/Hooks/self-test.ts
+   bun .claude/Hooks/validate-protected.ts
    ```
 7. **Commit** (validation runs automatically if hook installed)
 8. **Push** to public repo
@@ -232,7 +232,7 @@ Protected file validation with exceptions allows:
 
 Self-test uses `process.cwd()` instead of importing from `pai-paths.ts` because:
 - Allows testing PAI repo independently of installed system
-- User runs: `cd ~/Projects/PAI && bun .claude/hooks/self-test.ts`
+- User runs: `cd ~/Projects/PAI && bun .claude/Hooks/self-test.ts`
 - Tests the actual repo they're in, not their ~/.claude
 - Enables contributors to validate before submitting PRs
 
@@ -258,10 +258,10 @@ Potential improvements identified but not implemented:
 ## Files Changed
 
 ### New Files (11):
-- `.claude/hooks/lib/pai-paths.ts`
-- `.claude/hooks/self-test.ts`
-- `.claude/hooks/validate-protected.ts`
-- `.claude/hooks/pre-commit.template`
+- `.claude/Hooks/lib/pai-paths.ts`
+- `.claude/Hooks/self-test.ts`
+- `.claude/Hooks/validate-protected.ts`
+- `.claude/Hooks/pre-commit.template`
 - `.pai-protected.json`
 - `PAI_CONTRACT.md`
 - `PAI_SYNC_GUIDE.md`
@@ -269,13 +269,13 @@ Potential improvements identified but not implemented:
 - Plus history directories created
 
 ### Modified Files (8):
-- `.claude/hooks/capture-all-events.ts`
-- `.claude/hooks/capture-session-summary.ts`
-- `.claude/hooks/capture-tool-output.ts`
-- `.claude/hooks/initialize-pai-session.ts`
-- `.claude/hooks/load-core-context.ts`
-- `.claude/hooks/load-dynamic-requirements.ts`
-- `.claude/hooks/update-tab-titles.ts`
+- `.claude/Hooks/capture-all-events.ts`
+- `.claude/Hooks/capture-session-summary.ts`
+- `.claude/Hooks/capture-tool-output.ts`
+- `.claude/Hooks/initialize-pai-session.ts`
+- `.claude/Hooks/load-core-context.ts`
+- `.claude/Hooks/load-dynamic-requirements.ts`
+- `.claude/Hooks/update-tab-titles.ts`
 - `README.md`
 
 ## Impact

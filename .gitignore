@@ -60,12 +60,17 @@ out/
 # Personal/Private data
 private/
 secrets/
-!.claude/skills/Secrets/
+!.claude/Skills/Secrets/
 credentials/
 
 # Claude Code runtime data (user-specific, changes constantly)
-.claude/history/
+.claude/History/
 .claude/agent-sessions.json
-.claude/scratchpad/
+.claude/Scratchpad/
 .claude/*.bak
 .claude/settings.json.bak
+
+# PAI Update System (sideloading)
+.claude/pai_updates/
+.claude/pai_backups/
+.claude/.pai-sync-history

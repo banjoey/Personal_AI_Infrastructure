@@ -3,19 +3,19 @@
 ## CRITICAL FIXES STILL NEEDED (Before responding to issues):
 
 ### 1. Fix load-core-context.ts hook (Issue #108)
-**File:** `.claude/hooks/load-core-context.ts` line 47
+**File:** `.claude/Hooks/load-core-context.ts` line 47
 **Problem:** References `skills/PAI/SKILL.md` (old name)
 **Fix:** Change to `skills/CORE/SKILL.md`
 **Impact:** Blocks PAI from loading for all new users
 
 ### 2. Remove system-mcp references from CORE/SKILL.md (Issue #109)
-**File:** `.claude/skills/CORE/SKILL.md`
+**File:** `.claude/Skills/CORE/SKILL.md`
 **Problem:** Routes to system-mcp skill that doesn't exist in public repo
 **Fix:** Remove entire "Web Scraping & MCP Systems" section
 **Impact:** Users get confusing errors when trying web scraping
 
 ### 3. Check all hooks for PAI vs CORE references
-**Files:** All `.claude/hooks/*.ts`
+**Files:** All `.claude/Hooks/*.ts`
 **Problem:** May have other references to old PAI skill name
 **Fix:** Global search/replace PAI → CORE in hooks
 **Impact:** Various hook failures
@@ -115,7 +115,7 @@ The commands/ and documents/ folders were removed in recent cleanup as part of
 simplifying PAI to "start clean, start small."
 
 If you need these:
-- commands/ → Use slash commands in .claude/commands/ (see QUICKSTART)
+- commands/ → Use slash commands in .claude/Commands/ (see QUICKSTART)
 - documents/ → Create .claude/documents/ if needed for your workflow
 
 The focus is now on CORE skill + individual skills in skills/ directory.

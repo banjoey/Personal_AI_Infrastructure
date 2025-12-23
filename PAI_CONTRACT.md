@@ -81,7 +81,7 @@ curl http://localhost:3000/health
 - Provider-specific setup
 
 ### 4. **Advanced Skills**
-Most skills in `.claude/skills/` require:
+Most skills in `.claude/Skills/` require:
 - API keys (varies by skill)
 - External tool installation
 - Service configuration
@@ -95,7 +95,7 @@ Most skills in `.claude/skills/` require:
 These are provided as **starting points**, not guaranteed features:
 
 ### 1. **Example Skills**
-Skills in `.claude/skills/` demonstrate patterns but may:
+Skills in `.claude/Skills/` demonstrate patterns but may:
 - Require updates as APIs change
 - Need API keys not documented
 - Contain experimental code
@@ -137,12 +137,12 @@ Some docs describe:
 Run this command to verify PAI is working:
 
 ```bash
-bun ${PAI_DIR}/hooks/self-test.ts
+bun ${PAI_DIR}/Hooks/self-test.ts
 ```
 
 Expected output:
 ```
-✅ PAI_DIR resolves: /Users/yourname/.claude
+✅ PAI_DIR resolves: /home/yourname/.claude  # or /Users/yourname/.claude on macOS
 ✅ Hooks directory exists
 ✅ CORE skill loads
 ✅ Settings.json valid
@@ -172,8 +172,8 @@ These files are **PAI-specific** and must NOT be overwritten with Kai content:
 ```
 PAI_CONTRACT.md                    # This file
 README.md                          # PAI-specific (not Kai README)
-.claude/hooks/lib/pai-paths.ts     # PAI path resolution
-.claude/hooks/self-test.ts         # PAI health check
+.claude/Hooks/lib/pai-paths.ts     # PAI path resolution
+.claude/Hooks/self-test.ts         # PAI health check
 SECURITY.md                        # Public security guidance
 .env.example                       # Template (no secrets)
 ```

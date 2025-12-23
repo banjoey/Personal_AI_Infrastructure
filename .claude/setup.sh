@@ -8,19 +8,11 @@
 # It's designed to be friendly, informative, and safe.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/banjoey/Personal_AI_Infrastructure/joey-all/.claude/setup.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/setup.sh | bash
 #
 # Or download and run manually:
 #   ./setup.sh
 #
-# ============================================
-
-# ============================================
-# Branch Configuration
-# ============================================
-# Each branch should set these to match its identity
-PAI_REPO="https://github.com/banjoey/Personal_AI_Infrastructure.git"
-PAI_BRANCH="joey-all"
 # ============================================
 
 set -e  # Exit on error
@@ -43,21 +35,6 @@ ROCKET="🚀"
 PARTY="🎉"
 THINKING="🤔"
 WRENCH="🔧"
-
-# Detect input source for interactive prompts
-# When run via curl | bash, stdin is consumed by curl, so we need /dev/tty
-if [ -t 0 ]; then
-    # stdin is connected to terminal - use it
-    TTY_INPUT=""
-else
-    # stdin is piped (curl | bash) - try /dev/tty
-    if [ -c /dev/tty ]; then
-        TTY_INPUT="</dev/tty"
-    else
-        # No TTY available - will use defaults
-        TTY_INPUT=""
-    fi
-fi
 
 # ============================================
 # Helper Functions
@@ -102,13 +79,13 @@ ask_yes_no() {
     fi
 
     while true; do
-        echo -n -e "${CYAN}${THINKING} $question $prompt: ${NC}" >/dev/tty
-        read -r response </dev/tty
+        echo -n -e "${CYAN}${THINKING} $question $prompt: ${NC}"
+        read -r response
         response=${response:-$default}
         case "$response" in
             [Yy]* ) return 0;;
             [Nn]* ) return 1;;
-            * ) echo "Please answer yes or no." >/dev/tty;;
+            * ) echo "Please answer yes or no.";;
         esac
     done
 }
@@ -119,12 +96,14 @@ ask_input() {
     local response
 
     if [ -n "$default" ]; then
-        echo -n -e "${CYAN}${THINKING} $question [$default]: ${NC}" >/dev/tty
+        echo -n -e "${CYAN}${THINKING} $question [$default]: ${NC}"
     else
-        echo -n -e "${CYAN}${THINKING} $question: ${NC}" >/dev/tty
+        echo -n -e "${CYAN}${THINKING} $question: ${NC}"
     fi
 
-    read -r response </dev/tty
+    read -r response
+    # Trim leading/trailing whitespace
+    response=$(echo "$response" | xargs)
     echo "${response:-$default}"
 }
 
@@ -220,21 +199,21 @@ fi
 
 NEEDS_INSTALL=false
 
-if [ "$HAS_GIT" = false ] || [ "$HAS_BUN" = false ]; then
+if [ "$HAS_GIT" = false ] || [ "$HAS_BREW" = false ] || [ "$HAS_BUN" = false ]; then
     NEEDS_INSTALL=true
 fi
 
 if [ "$NEEDS_INSTALL" = true ]; then
     print_header "Step 2: Installing Missing Software"
 
-    # Install Homebrew if needed (optional)
+    # Install Homebrew if needed
     if [ "$HAS_BREW" = false ]; then
         echo ""
-        print_info "Homebrew is not installed. Homebrew is a package manager for macOS."
-        print_info "It can be used to install tools, but it's not required."
+        print_warning "Homebrew is not installed. Homebrew is a package manager for macOS."
+        print_info "We need it to install other tools like Bun."
         echo ""
 
-        if ask_yes_no "Install Homebrew? (optional)" "n"; then
+        if ask_yes_no "Install Homebrew?"; then
             print_step "Installing Homebrew..."
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
@@ -246,7 +225,8 @@ if [ "$NEEDS_INSTALL" = true ]; then
             print_success "Homebrew installed successfully!"
             HAS_BREW=true
         else
-            print_info "Continuing without Homebrew. We'll use alternative installation methods."
+            print_error "Homebrew is required to continue. Exiting."
+            exit 1
         fi
     fi
 
@@ -280,28 +260,9 @@ if [ "$NEEDS_INSTALL" = true ]; then
 
         if ask_yes_no "Install Bun?"; then
             print_step "Installing Bun..."
-
-            # Use Homebrew if available, otherwise use curl
-            if [ "$HAS_BREW" = true ]; then
-                print_info "Installing Bun via Homebrew..."
-                brew install oven-sh/bun/bun
-            else
-                print_info "Installing Bun via curl (Homebrew not available)..."
-                curl -fsSL https://bun.sh/install | bash
-
-                # Add Bun to PATH for this session
-                export BUN_INSTALL="$HOME/.bun"
-                export PATH="$BUN_INSTALL/bin:$PATH"
-            fi
-
-            # Verify installation
-            if command_exists bun; then
-                print_success "Bun installed successfully!"
-                HAS_BUN=true
-            else
-                print_warning "Bun installation may have failed. You may need to restart your terminal."
-                print_info "After restarting, verify with: bun --version"
-            fi
+            brew install oven-sh/bun/bun
+            print_success "Bun installed successfully!"
+            HAS_BUN=true
         else
             print_warning "Bun is optional, but recommended. Continuing without it."
         fi
@@ -354,35 +315,13 @@ print_info "PAI will be installed to: $PAI_DIR"
 
 print_header "Step 4: Getting PAI"
 
-print_info "Repository: $PAI_REPO"
-print_info "Branch: $PAI_BRANCH"
-
 if [ -d "$PAI_DIR/.git" ]; then
     print_info "PAI is already installed at $PAI_DIR"
 
     if ask_yes_no "Update to the latest version?"; then
         print_step "Updating PAI..."
         cd "$PAI_DIR"
-
-        # Reset any dirty files in the repo (keeps repo clean for pull)
-        # User data (history, sessions) should be in ~/.claude, not here
-        if ! git diff --quiet 2>/dev/null; then
-            print_info "Resetting local changes for clean update..."
-            print_info "(Your data is safe in ~/.claude, not in the repo)"
-            git checkout -- . 2>/dev/null || true
-            # Also clean untracked files in .claude that shouldn't be there
-            git clean -fd .claude/history .claude/scratchpad 2>/dev/null || true
-        fi
-
-        # Ensure we're on the correct branch
-        current_branch=$(git branch --show-current)
-        if [ "$current_branch" != "$PAI_BRANCH" ]; then
-            print_warning "Currently on branch '$current_branch', switching to '$PAI_BRANCH'..."
-            git fetch origin
-            git checkout "$PAI_BRANCH"
-        fi
-
-        git pull origin "$PAI_BRANCH"
+        git pull
         print_success "PAI updated successfully!"
     else
         print_info "Using existing installation"
@@ -393,8 +332,8 @@ else
     # Create parent directory if it doesn't exist
     mkdir -p "$(dirname "$PAI_DIR")"
 
-    # Clone the repository with specific branch
-    git clone -b "$PAI_BRANCH" "$PAI_REPO" "$PAI_DIR"
+    # Clone the repository
+    git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git "$PAI_DIR"
 
     print_success "PAI downloaded successfully!"
 fi
@@ -405,30 +344,18 @@ fi
 
 print_header "Step 5: Configuring Environment"
 
-# Detect user's DEFAULT shell (not the script's shell)
-# $SHELL contains the user's login shell, which is what we want
-USER_SHELL=$(basename "$SHELL")
-case "$USER_SHELL" in
-    zsh)
-        SHELL_CONFIG="$HOME/.zshrc"
-        SHELL_NAME="zsh"
-        ;;
-    bash)
-        SHELL_CONFIG="$HOME/.bashrc"
-        SHELL_NAME="bash"
-        ;;
-    *)
-        # Default to zsh on macOS, bash on Linux
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            SHELL_CONFIG="$HOME/.zshrc"
-            SHELL_NAME="zsh"
-        else
-            SHELL_CONFIG="$HOME/.bashrc"
-            SHELL_NAME="bash"
-        fi
-        print_warning "Unknown shell '$USER_SHELL'. Defaulting to $SHELL_NAME"
-        ;;
-esac
+# Detect shell
+if [ -n "$ZSH_VERSION" ]; then
+    SHELL_CONFIG="$HOME/.zshrc"
+    SHELL_NAME="zsh"
+elif [ -n "$BASH_VERSION" ]; then
+    SHELL_CONFIG="$HOME/.bashrc"
+    SHELL_NAME="bash"
+else
+    print_warning "Couldn't detect shell type. Defaulting to .zshrc"
+    SHELL_CONFIG="$HOME/.zshrc"
+    SHELL_NAME="zsh"
+fi
 
 print_info "Detected shell: $SHELL_NAME"
 print_info "Configuration file: $SHELL_CONFIG"
@@ -448,67 +375,31 @@ else
     SHOULD_ADD_CONFIG=true
 fi
 
-# Ask for personalization (ALWAYS, regardless of shell config update)
-print_step "Personalizing your PAI installation..."
-
-# ----------------------------------------
-# Detect existing names from settings.json (for upgrades)
-# ----------------------------------------
-EXISTING_AI_NAME=""
-EXISTING_USER_NAME=""
-
-if [ -f "$HOME/.claude/settings.json" ]; then
-    # Try to extract existing AI name (DA or ASSISTANT_NAME)
-    if command_exists jq; then
-        EXISTING_AI_NAME=$(jq -r '.env.DA // .env.ASSISTANT_NAME // empty' "$HOME/.claude/settings.json" 2>/dev/null)
-        EXISTING_USER_NAME=$(jq -r '.env.USER_NAME // empty' "$HOME/.claude/settings.json" 2>/dev/null)
-    else
-        # Fallback: use grep/sed for systems without jq
-        EXISTING_AI_NAME=$(grep -o '"DA": "[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | cut -d'"' -f4)
-        if [ -z "$EXISTING_AI_NAME" ]; then
-            EXISTING_AI_NAME=$(grep -o '"ASSISTANT_NAME": "[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | cut -d'"' -f4)
-        fi
-        EXISTING_USER_NAME=$(grep -o '"USER_NAME": "[^"]*"' "$HOME/.claude/settings.json" 2>/dev/null | head -1 | cut -d'"' -f4)
-    fi
-fi
-
-# Set defaults: use existing names if found, otherwise "Kai" and "User"
-DEFAULT_AI_NAME="${EXISTING_AI_NAME:-Kai}"
-DEFAULT_USER_NAME="${EXISTING_USER_NAME:-User}"
-
-# Show upgrade message if we found existing names
-if [ -n "$EXISTING_AI_NAME" ] && [ "$EXISTING_AI_NAME" != "Kai" ] && [ "$EXISTING_AI_NAME" != "PAI" ]; then
-    print_info "Found existing configuration: AI='$EXISTING_AI_NAME', User='$EXISTING_USER_NAME'"
-fi
-
-# Ask for AI assistant name (with detected default)
-AI_NAME=$(ask_input "What would you like to call your AI assistant?" "$DEFAULT_AI_NAME")
-
-# Ask for user's name (with detected default)
-USER_NAME=$(ask_input "What's your name?" "$DEFAULT_USER_NAME")
-
-# Ask for color
-echo ""
-echo "Choose a display color:"
-echo "  1) purple (default)"
-echo "  2) blue"
-echo "  3) green"
-echo "  4) cyan"
-echo "  5) red"
-echo ""
-color_choice=$(ask_input "Enter your choice (1-5)" "1")
-
-case $color_choice in
-    1) AI_COLOR="purple" ;;
-    2) AI_COLOR="blue" ;;
-    3) AI_COLOR="green" ;;
-    4) AI_COLOR="cyan" ;;
-    5) AI_COLOR="red" ;;
-    *) AI_COLOR="purple" ;;
-esac
-
 if [ "$SHOULD_ADD_CONFIG" = true ]; then
     print_step "Adding PAI environment variables to $SHELL_CONFIG..."
+
+    # Ask for AI assistant name
+    AI_NAME=$(ask_input "What would you like to call your AI assistant?" "Kai")
+
+    # Ask for color
+    echo ""
+    echo "Choose a display color:"
+    echo "  1) purple (default)"
+    echo "  2) blue"
+    echo "  3) green"
+    echo "  4) cyan"
+    echo "  5) red"
+    echo ""
+    color_choice=$(ask_input "Enter your choice (1-5)" "1")
+
+    case $color_choice in
+        1) AI_COLOR="purple" ;;
+        2) AI_COLOR="blue" ;;
+        3) AI_COLOR="green" ;;
+        4) AI_COLOR="cyan" ;;
+        5) AI_COLOR="red" ;;
+        *) AI_COLOR="purple" ;;
+    esac
 
     # Add configuration to shell config
     cat >> "$SHELL_CONFIG" << EOF
@@ -536,77 +427,6 @@ EOF
     print_success "Environment variables added to $SHELL_CONFIG"
 else
     print_info "Keeping existing environment variables"
-fi
-
-# ----------------------------------------
-# Ask about creating a shortcut alias
-# ----------------------------------------
-echo ""
-print_info "PAI includes a modular launcher (pai-launch.sh) that runs pre-startup checks."
-print_info "You can create a shell alias to launch it easily."
-echo ""
-
-# PAI aliases file - works across bash/zsh
-PAI_ALIASES_FILE="$HOME/.pai_aliases"
-
-if ask_yes_no "Create a shell alias for the PAI launcher?"; then
-    # Ask for the alias name
-    echo ""
-    echo "Choose an alias name (what you'll type to launch PAI):"
-    echo "  Examples: pai, charles, kai, claude-pai"
-    echo ""
-    ALIAS_NAME=$(ask_input "Alias name" "pai")
-
-    # Validate alias doesn't conflict with existing commands
-    if command_exists "$ALIAS_NAME"; then
-        print_warning "'$ALIAS_NAME' already exists as a command"
-        if ! ask_yes_no "Override it anyway?"; then
-            print_info "Skipping alias creation"
-            ALIAS_NAME=""
-        fi
-    fi
-
-    if [ -n "$ALIAS_NAME" ]; then
-        # Create/update .pai_aliases file
-        # This approach works for both bash and zsh
-
-        # Create the aliases file if it doesn't exist
-        if [ ! -f "$PAI_ALIASES_FILE" ]; then
-            cat > "$PAI_ALIASES_FILE" << 'ALIASES_HEADER'
-# PAI (Personal AI Infrastructure) Aliases
-# This file is sourced by your shell config (.bashrc/.zshrc)
-# Managed by PAI setup - feel free to add your own aliases here
-
-ALIASES_HEADER
-        fi
-
-        # Remove old alias if it exists in the file
-        if grep -q "alias $ALIAS_NAME=" "$PAI_ALIASES_FILE" 2>/dev/null; then
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "/alias $ALIAS_NAME=/d" "$PAI_ALIASES_FILE"
-            else
-                sed -i "/alias $ALIAS_NAME=/d" "$PAI_ALIASES_FILE"
-            fi
-        fi
-
-        # Add new alias to .pai_aliases
-        echo "alias $ALIAS_NAME='$PAI_DIR/.claude/scripts/pai-launch.sh'" >> "$PAI_ALIASES_FILE"
-
-        # Ensure .pai_aliases is sourced from shell config
-        if ! grep -q "source.*\.pai_aliases" "$SHELL_CONFIG" 2>/dev/null && \
-           ! grep -q "\. .*\.pai_aliases" "$SHELL_CONFIG" 2>/dev/null; then
-            echo "" >> "$SHELL_CONFIG"
-            echo "# Source PAI aliases" >> "$SHELL_CONFIG"
-            echo "[ -f ~/.pai_aliases ] && source ~/.pai_aliases" >> "$SHELL_CONFIG"
-            print_info "Added .pai_aliases sourcing to $SHELL_CONFIG"
-        fi
-
-        print_success "Alias created: '$ALIAS_NAME' → PAI launcher"
-        print_info "Aliases stored in: ~/.pai_aliases"
-        print_info "Run 'source ~/.pai_aliases' or restart your terminal to use it"
-    fi
-else
-    print_info "You can always launch PAI manually with: $PAI_DIR/.claude/scripts/pai-launch.sh"
 fi
 
 # Source the configuration for this session
@@ -666,8 +486,7 @@ if ask_yes_no "Would you like to add API keys now?" "n"; then
     open -e "$PAI_DIR/.env" 2>/dev/null || nano "$PAI_DIR/.env"
     echo ""
     print_info "When you're done editing, save and close the file."
-    echo -n "Press Enter when you're ready to continue..." >/dev/tty
-    read </dev/tty
+    read -p "Press Enter when you're ready to continue..."
 else
     print_info "You can add API keys later by editing: $PAI_DIR/.env"
 fi
@@ -728,7 +547,63 @@ else
 fi
 
 # ============================================
-# Step 8: Claude Code Integration (Hybrid Approach)
+# Step 7.5: Fabric Setup (Optional)
+# ============================================
+
+print_header "Step 7.5: Fabric Setup (Optional)"
+
+echo "Fabric is an AI prompting framework with 248+ patterns for various tasks."
+echo "PAI includes native Fabric pattern execution, but the CLI is needed to:"
+echo "  • Download and update patterns from upstream"
+echo "  • Extract YouTube video transcripts"
+echo ""
+
+if ask_yes_no "Would you like to install Fabric?" "n"; then
+    print_step "Installing Fabric..."
+
+    # Install Fabric using official installer
+    curl -sSL https://raw.githubusercontent.com/danielmiessler/fabric/main/install.sh | bash
+
+    # Add fabric to PATH for this session
+    export PATH="$HOME/.local/bin:$PATH"
+
+    # Source shell config to ensure fabric is available
+    if [ -f "$HOME/.bashrc" ]; then
+        source "$HOME/.bashrc" 2>/dev/null || true
+    fi
+    if [ -f "$HOME/.zshrc" ]; then
+        source "$HOME/.zshrc" 2>/dev/null || true
+    fi
+
+    print_success "Fabric installed!"
+
+    # Download patterns from upstream
+    if command_exists fabric; then
+        print_step "Downloading Fabric patterns from upstream..."
+        fabric -U
+        print_success "Patterns downloaded to ~/.config/fabric/patterns"
+
+        # Sync patterns to PAI's local directory
+        if [ -f "$PAI_DIR/.claude/Skills/Fabric/tools/update-patterns.sh" ]; then
+            print_step "Syncing patterns to PAI..."
+            cd "$PAI_DIR/.claude/Skills/Fabric/tools"
+            bash ./update-patterns.sh
+            print_success "Patterns synced to PAI!"
+        else
+            print_warning "Pattern sync script not found. Patterns available in ~/.config/fabric/patterns"
+        fi
+    else
+        print_warning "Fabric installation may require a shell restart."
+        print_info "After restarting your terminal, run: fabric -U"
+        print_info "Then sync patterns: $PAI_DIR/.claude/Skills/Fabric/tools/update-patterns.sh"
+    fi
+else
+    print_info "Skipping Fabric setup. You can install it later with:"
+    echo "  curl -sSL https://raw.githubusercontent.com/danielmiessler/fabric/main/install.sh | bash"
+fi
+
+# ============================================
+# Step 8: AI Assistant Integration
 # ============================================
 
 print_header "Step 8: AI Assistant Integration"
@@ -739,216 +614,38 @@ echo ""
 if ask_yes_no "Are you using Claude Code?"; then
     print_step "Configuring Claude Code integration..."
 
-    # ----------------------------------------
-    # Backup existing ~/.claude if it exists
-    # ----------------------------------------
-    if [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ]; then
-        BACKUP_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-        BACKUP_DIR="$HOME/.claude/bak.$BACKUP_TIMESTAMP"
-
-        print_step "Backing up existing ~/.claude configuration..."
-        mkdir -p "$BACKUP_DIR"
-
-        # Copy existing content to backup (excluding previous backups)
-        for item in "$HOME/.claude"/*; do
-            if [ -e "$item" ]; then
-                item_name=$(basename "$item")
-                # Skip backup directories
-                if [[ "$item_name" != bak.* ]]; then
-                    cp -r "$item" "$BACKUP_DIR/"
-                fi
-            fi
-        done
-
-        print_success "Backed up existing config to: $BACKUP_DIR"
-        print_info "Your previous settings are safe and can be restored if needed."
-    fi
-
     # Create Claude directory if it doesn't exist
     mkdir -p "$HOME/.claude"
 
-    # ----------------------------------------
-    # Create LOCAL directories (NOT symlinked - user-specific runtime data)
-    # ----------------------------------------
-    mkdir -p "$HOME/.claude/history/sessions"
-    mkdir -p "$HOME/.claude/history/raw-outputs"
-    mkdir -p "$HOME/.claude/history/learnings"
-    mkdir -p "$HOME/.claude/history/research"
-    mkdir -p "$HOME/.claude/scratchpad"
+    # Copy the .claude directory contents to ~/.claude
+    print_step "Copying PAI configuration to ~/.claude..."
 
-    # ----------------------------------------
-    # Symlink directories (skills, hooks, commands, etc.)
-    # These are PAI-managed and update with git pull
-    # ----------------------------------------
-    print_step "Setting up symlinks to PAI..."
-
-    # List of directories to symlink (NOT history/scratchpad - those are local)
-    SYMLINK_DIRS="skills hooks commands Tools agents scripts"
-
-    for dir in $SYMLINK_DIRS; do
+    # Copy hooks, skills, and other directories (but not settings.json yet)
+    for dir in hooks skills commands Tools; do
         if [ -d "$PAI_DIR/.claude/$dir" ]; then
-            # Remove existing directory or symlink
-            if [ -L "$HOME/.claude/$dir" ]; then
-                rm "$HOME/.claude/$dir"
-            elif [ -d "$HOME/.claude/$dir" ]; then
-                # Already backed up above, safe to remove
-                rm -rf "$HOME/.claude/$dir"
-            fi
-
-            # Create symlink
-            ln -sf "$PAI_DIR/.claude/$dir" "$HOME/.claude/$dir"
-            print_success "Linked $dir/ → PAI"
+            cp -r "$PAI_DIR/.claude/$dir" "$HOME/.claude/"
+            print_success "Copied $dir/"
         fi
     done
 
-    # Symlink statusline-command.sh if it exists
-    if [ -f "$PAI_DIR/.claude/statusline-command.sh" ]; then
-        if [ -L "$HOME/.claude/statusline-command.sh" ]; then
-            rm "$HOME/.claude/statusline-command.sh"
-        elif [ -f "$HOME/.claude/statusline-command.sh" ]; then
-            rm "$HOME/.claude/statusline-command.sh"
-        fi
-        ln -sf "$PAI_DIR/.claude/statusline-command.sh" "$HOME/.claude/statusline-command.sh"
-        print_success "Linked statusline-command.sh → PAI"
-    fi
+    # Copy settings.json and update PAI_DIR with actual path
+    if [ -f "$PAI_DIR/.claude/settings.json" ]; then
+        cp "$PAI_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
 
-    # ----------------------------------------
-    # Settings.json: Copy first, then personalize the COPY
-    # (Never modify PAI repo files - keeps git clean for updates)
-    # ----------------------------------------
-    print_step "Configuring settings.json..."
+        # Get home directory robustly (fallback if $HOME is unset)
+        USER_HOME="${HOME:-$(eval echo ~)}"
 
-    # First, copy settings.json to ~/.claude (we'll modify the COPY, not the source)
-    cp "$PAI_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
-
-    # Now personalize the COPY with user values (never touch PAI repo)
-    # PAI_DIR in settings.json points to repo root (~/PAI), hooks use ${PAI_DIR}/.claude/
-
-    if command_exists jq; then
-        # Use jq for reliable JSON manipulation (preferred)
-        jq --arg pai_dir "$PAI_DIR" \
-           --arg ai_name "$AI_NAME" \
-           --arg user_name "$USER_NAME" \
-           '.env.PAI_DIR = $pai_dir | .env.DA = $ai_name | .env.ASSISTANT_NAME = $ai_name | .env.USER_NAME = $user_name' \
-           "$HOME/.claude/settings.json" > "$HOME/.claude/settings.json.tmp"
-        mv "$HOME/.claude/settings.json.tmp" "$HOME/.claude/settings.json"
-        print_info "Configured settings.json with jq (PAI_DIR=$PAI_DIR)"
-    else
-        # Fallback to sed (less reliable but works without jq)
-        print_warning "jq not found - using sed fallback (install jq for better reliability)"
+        # Update PAI_DIR to the actual home directory path (platform-agnostic)
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' \
-                -e "s|/Users/YOURNAME/PAI|$PAI_DIR|g" \
-                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure|$PAI_DIR|g" \
-                -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
-                -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
-                -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
-                -e "s|\"ASSISTANT_NAME\": \"Kai\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-                -e "s|\"ASSISTANT_NAME\": \"Charles\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-                -e "s|\"USER_NAME\": \"User\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-                -e "s|\"USER_NAME\": \"Joey\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-                "$HOME/.claude/settings.json"
+            sed -i '' "s|__HOME__|${USER_HOME}|g" "$HOME/.claude/settings.json"
         else
-            sed -i \
-                -e "s|/Users/YOURNAME/PAI|$PAI_DIR|g" \
-                -e "s|/Users/jbarkley/src/pai/Personal_AI_Infrastructure|$PAI_DIR|g" \
-                -e "s|\"DA\": \"PAI\"|\"DA\": \"$AI_NAME\"|g" \
-                -e "s|\"DA\": \"Charles\"|\"DA\": \"$AI_NAME\"|g" \
-                -e "s|\"DA\": \"Kai\"|\"DA\": \"$AI_NAME\"|g" \
-                -e "s|\"ASSISTANT_NAME\": \"Kai\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-                -e "s|\"ASSISTANT_NAME\": \"Charles\"|\"ASSISTANT_NAME\": \"$AI_NAME\"|g" \
-                -e "s|\"USER_NAME\": \"User\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-                -e "s|\"USER_NAME\": \"Joey\"|\"USER_NAME\": \"$USER_NAME\"|g" \
-                "$HOME/.claude/settings.json"
-        fi
-    fi
-
-    # Check if user has existing settings with customizations to preserve
-    if [ -f "$BACKUP_DIR/settings.json" ] 2>/dev/null; then
-        print_info "Found existing settings.json - checking for user customizations..."
-
-        # Check for model override (e.g., Opus 4.5 workaround)
-        if command_exists jq; then
-            # Use jq for proper JSON handling
-            USER_MODEL=$(jq -r '.model // empty' "$BACKUP_DIR/settings.json" 2>/dev/null)
-            if [ -n "$USER_MODEL" ] && [ "$USER_MODEL" != "null" ]; then
-                print_info "Preserving your model setting: $USER_MODEL"
-                # Modify the COPY in ~/.claude, not the PAI repo
-                jq --arg model "$USER_MODEL" '.model = $model' "$HOME/.claude/settings.json" > "$HOME/.claude/settings.json.tmp"
-                mv "$HOME/.claude/settings.json.tmp" "$HOME/.claude/settings.json"
-            fi
-        else
-            # Fallback: check if model line exists and preserve it
-            USER_MODEL=$(grep -o '"model"[[:space:]]*:[[:space:]]*"[^"]*"' "$BACKUP_DIR/settings.json" 2>/dev/null | head -1)
-            if [ -n "$USER_MODEL" ]; then
-                print_info "Preserving your model setting (install jq for better JSON handling)"
-                print_warning "Model preservation without jq may be imprecise"
-            fi
-        fi
-    fi
-
-    print_success "Settings configured with your personalization"
-
-    # ----------------------------------------
-    # Initialize pai-config.json (cross-environment config)
-    # ----------------------------------------
-    print_step "Configuring PAI launcher settings..."
-
-    PAI_CONFIG_PATH="$HOME/.claude/pai-config.json"
-
-    if [ -f "$PAI_CONFIG_PATH" ]; then
-        print_info "pai-config.json already exists - preserving your settings"
-    else
-        # Copy template from PAI repo
-        if [ -f "$PAI_DIR/.claude/pai-config.json" ]; then
-            cp "$PAI_DIR/.claude/pai-config.json" "$PAI_CONFIG_PATH"
-            print_success "PAI launcher config initialized"
-        else
-            # Create default config if template doesn't exist
-            cat > "$PAI_CONFIG_PATH" << 'PAICONFIG'
-{
-  "_design_note": "This file is intentionally separate from settings.json to support future CLI environments (gemini, opencode, etc.). Each environment may have its own settings.json equivalent, but pai-config.json is shared across all. Decision made 2025-12-15.",
-  "cli": "claude",
-  "autoUpdate": "notify",
-  "context": {
-    "onLoad": "auto-load",
-    "onExit": "none"
-  },
-  "modules": {
-    "mcpSync": true,
-    "healthCheck": true,
-    "contextDetection": true,
-    "autoUpdate": true
-  }
-}
-PAICONFIG
-            print_success "PAI launcher config created with defaults"
+            sed -i "s|__HOME__|${USER_HOME}|g" "$HOME/.claude/settings.json"
         fi
 
-        print_info "Launcher settings (can be changed in ~/.claude/pai-config.json):"
-        echo "  • Auto-update: notify (shows available updates)"
-        echo "  • Context on load: auto-load (reads project context files)"
-        echo "  • Context on exit: none (disabled by default)"
+        print_success "Updated settings.json with your path: ${USER_HOME}/.claude"
     fi
 
-    # ----------------------------------------
-    # Summary of what was set up
-    # ----------------------------------------
     echo ""
-    print_info "Claude Code Integration Summary:"
-    echo "  • Symlinked: skills/, hooks/, commands/, Tools/, agents/, scripts/"
-    echo "  • Copied: settings.json (with your name: $AI_NAME)"
-    echo "  • Created: pai-config.json (launcher configuration)"
-    if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then
-        echo "  • Backup: $BACKUP_DIR"
-    fi
-    echo ""
-    echo "  ${CYAN}To update PAI:${NC} Re-run this setup script"
-    echo "  ${CYAN}Your customizations:${NC} Edit ~/.claude/settings.json directly"
-    echo "  ${CYAN}Launcher settings:${NC} Edit ~/.claude/pai-config.json"
-    echo "  ${CYAN}PAI updates:${NC} Symlinked dirs update automatically with git pull"
-    echo ""
-
     print_info "Next steps for Claude Code:"
     echo "  1. Download Claude Code from: https://claude.ai/code"
     echo "  2. Sign in with your Anthropic account"
@@ -956,7 +653,7 @@ PAICONFIG
     echo ""
 else
     print_info "For other AI assistants, refer to the documentation:"
-    echo "  $PAI_DIR/docs/QUICKSTART.md"
+    echo "  $PAI_DIR/documentation/how-to-start.md"
 fi
 
 # ============================================
@@ -974,35 +671,20 @@ else
     print_error "PAI directory not found: $PAI_DIR"
 fi
 
-# Test 2: Skills directory exists and is properly linked
-if [ -L "$HOME/.claude/skills" ]; then
-    skill_count=$(find "$HOME/.claude/skills" -maxdepth 1 -type d | wc -l | tr -d ' ')
-    print_success "Skills symlinked: $skill_count skills available"
-elif [ -d "$PAI_DIR/.claude/skills" ]; then
-    skill_count=$(find "$PAI_DIR/.claude/skills" -maxdepth 1 -type d | wc -l | tr -d ' ')
-    print_warning "Skills exist in PAI but not symlinked to ~/.claude"
+# Test 2: Skills directory exists
+if [ -d "$PAI_DIR/skills" ]; then
+    skill_count=$(find "$PAI_DIR/skills" -maxdepth 1 -type d | wc -l | tr -d ' ')
+    print_success "Found $skill_count skills"
 else
     print_warning "Skills directory not found"
 fi
 
 # Test 3: Commands directory exists
-if [ -L "$HOME/.claude/commands" ]; then
-    command_count=$(find "$HOME/.claude/commands" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-    print_success "Commands symlinked: $command_count commands available"
-elif [ -d "$PAI_DIR/.claude/commands" ]; then
-    print_warning "Commands exist in PAI but not symlinked to ~/.claude"
+if [ -d "$PAI_DIR/commands" ]; then
+    command_count=$(find "$PAI_DIR/commands" -type f -name "*.md" | wc -l | tr -d ' ')
+    print_success "Found $command_count commands"
 else
-    print_info "Commands directory not found (optional)"
-fi
-
-# Test 3b: Hooks directory
-if [ -L "$HOME/.claude/hooks" ]; then
-    hook_count=$(find "$HOME/.claude/hooks" -type f -name "*.ts" 2>/dev/null | wc -l | tr -d ' ')
-    print_success "Hooks symlinked: $hook_count hooks available"
-elif [ -d "$PAI_DIR/.claude/hooks" ]; then
-    print_warning "Hooks exist in PAI but not symlinked to ~/.claude"
-else
-    print_warning "Hooks directory not found"
+    print_warning "Commands directory not found"
 fi
 
 # Test 4: Environment variables
@@ -1020,13 +702,11 @@ else
     print_warning ".env file not found"
 fi
 
-# Test 6: Claude Code integration (hybrid approach)
-if [ -L "$HOME/.claude/skills" ] && [ -f "$HOME/.claude/settings.json" ]; then
-    print_success "Claude Code integration configured (hybrid: symlinks + settings)"
-elif [ -L "$HOME/.claude/settings.json" ]; then
-    print_info "Claude Code settings symlinked (legacy setup)"
+# Test 6: Claude Code integration
+if [ -L "$HOME/.claude/settings.json" ]; then
+    print_success "Claude Code integration configured"
 elif [ -f "$HOME/.claude/settings.json" ]; then
-    print_info "Claude Code settings exist (may need re-run of setup.sh)"
+    print_info "Claude Code settings exist (not linked to PAI)"
 else
     print_info "Claude Code settings not configured"
 fi
@@ -1070,9 +750,9 @@ echo "   • 'Research the latest AI developments'"
 echo "   • 'What skills do you have?'"
 echo ""
 echo "3. ${CYAN}Customize PAI for you:${NC}"
-echo "   • Edit: $PAI_DIR/skills/PAI/SKILL.md"
+echo "   • Edit: $PAI_DIR/Skills/PAI/SKILL.md"
 echo "   • Add API keys: $PAI_DIR/.env"
-echo "   • Read the docs: $PAI_DIR/docs/QUICKSTART.md"
+echo "   • Read the docs: $PAI_DIR/Docs/QUICKSTART.md"
 echo ""
 
 print_header "Quick Reference"
@@ -1082,13 +762,13 @@ echo ""
 echo "  ${CYAN}cd \$PAI_DIR${NC}                    # Go to PAI directory"
 echo "  ${CYAN}cd \$PAI_DIR && git pull${NC}       # Update PAI to latest version"
 echo "  ${CYAN}open -e \$PAI_DIR/.env${NC}         # Edit API keys"
-echo "  ${CYAN}ls \$PAI_DIR/skills${NC}            # See available skills"
+echo "  ${CYAN}ls \$PAI_DIR/Skills${NC}            # See available skills"
 echo "  ${CYAN}source ~/.zshrc${NC}                # Reload environment"
 echo ""
 
 print_header "Resources"
 
-echo "  📖 Documentation: $PAI_DIR/documentation/"
+echo "  📖 Documentation: $PAI_DIR/Docs/"
 echo "  🌐 GitHub: https://github.com/danielmiessler/Personal_AI_Infrastructure"
 echo "  📝 Blog: https://danielmiessler.com/blog/personal-ai-infrastructure"
 echo "  🎬 Video: https://youtu.be/iKwRWwabkEc"
@@ -1108,7 +788,7 @@ echo ""
 
 # Optional: Open documentation
 if ask_yes_no "Would you like to open the getting started guide?" "y"; then
-    open "$PAI_DIR/docs/QUICKSTART.md" 2>/dev/null || cat "$PAI_DIR/docs/QUICKSTART.md"
+    open "$PAI_DIR/Docs/QUICKSTART.md" 2>/dev/null || cat "$PAI_DIR/Docs/QUICKSTART.md"
 fi
 
 echo ""

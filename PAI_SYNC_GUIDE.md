@@ -22,19 +22,19 @@ PAI has built-in protection to prevent accidents:
 Defines files that must NOT be overwritten with Kai content:
 - `README.md` - PAI-specific (not Kai README)
 - `PAI_CONTRACT.md` - Defines PAI boundaries
-- `.claude/hooks/lib/pai-paths.ts` - PAI path resolution
-- `.claude/hooks/self-test.ts` - PAI health check
+- `.claude/Hooks/lib/pai-paths.ts` - PAI path resolution
+- `.claude/Hooks/self-test.ts` - PAI health check
 - `.claude/.env.example` - Template (no real keys)
 - More listed in the manifest
 
-### 2. **Validation Script** (`.claude/hooks/validate-protected.ts`)
+### 2. **Validation Script** (`.claude/Hooks/validate-protected.ts`)
 Checks for:
 - ❌ API keys in committed files
 - ❌ Personal email addresses
 - ❌ References to private Kai data
 - ❌ Secrets or credentials
 
-### 3. **Pre-Commit Hook** (`.git/hooks/pre-commit`)
+### 3. **Pre-Commit Hook** (`.git/Hooks/pre-commit`)
 Automatically runs validation before every commit.
 
 ---
@@ -59,10 +59,10 @@ Ask yourself:
 ### Step 3: Copy to PAI Repo
 ```bash
 # Example: Copying a new skill
-cp -r ${PAI_DIR}/skills/new-skill ~/Projects/PAI/.claude/skills/
+cp -r ${PAI_DIR}/Skills/new-skill ~/Projects/PAI/.claude/Skills/
 
 # Example: Updating a hook
-cp ${PAI_DIR}/hooks/some-hook.ts ~/Projects/PAI/.claude/hooks/
+cp ${PAI_DIR}/Hooks/some-hook.ts ~/Projects/PAI/.claude/Hooks/
 ```
 
 **IMPORTANT:** Do NOT use `cp -r ~/.claude ~/Projects/PAI/` (don't bulk copy everything)
@@ -71,7 +71,7 @@ cp ${PAI_DIR}/hooks/some-hook.ts ~/Projects/PAI/.claude/hooks/
 Remove any:
 - API keys (`ANTHROPIC_API_KEY=sk-...`)
 - Personal emails (`daniel@danielmiessler.com`)
-- Private file paths (`/Users/daniel/.claude/skills/personal`)
+- Private file paths (`/Users/daniel/.claude/Skills/personal`)
 - References to private services
 
 Replace with placeholders:
@@ -86,12 +86,12 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ### Step 5: Run Self-Test
 ```bash
 cd ~/Projects/PAI
-bun .claude/hooks/self-test.ts
+bun .claude/Hooks/self-test.ts
 ```
 
 Expected output:
 ```
-✅ PAI_DIR Resolution: /Users/yourname/Projects/PAI/.claude
+✅ PAI_DIR Resolution: $HOME/.claude  # Shows your actual resolved path
 ✅ Hooks Directory: Found
 ✅ CORE Skill: loads correctly
 ...
@@ -101,14 +101,14 @@ Expected output:
 ### Step 6: Run Protection Validation
 ```bash
 cd ~/Projects/PAI
-bun .claude/hooks/validate-protected.ts
+bun .claude/Hooks/validate-protected.ts
 ```
 
 Expected output:
 ```
 ✅ README.md
 ✅ PAI_CONTRACT.md
-✅ .claude/hooks/lib/pai-paths.ts
+✅ .claude/Hooks/lib/pai-paths.ts
 ...
 ✅ All protected files validated successfully!
 ```
@@ -200,8 +200,8 @@ The pre-commit hook is NOT installed by default (to avoid interfering with other
 To install:
 ```bash
 cd ~/Projects/PAI
-cp .claude/hooks/pre-commit.template .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
+cp .claude/Hooks/pre-commit.template .git/Hooks/pre-commit
+chmod +x .git/Hooks/pre-commit
 ```
 
 Now validation runs automatically before every commit.
@@ -225,9 +225,9 @@ See `.pai-protected.json` for the complete list.
    - `SECURITY.md` - Public security guidance
 
 2. **PAI Infrastructure**
-   - `.claude/hooks/lib/pai-paths.ts` - Path resolution library
-   - `.claude/hooks/self-test.ts` - Health check system
-   - `.claude/hooks/validate-protected.ts` - Protection validator
+   - `.claude/Hooks/lib/pai-paths.ts` - Path resolution library
+   - `.claude/Hooks/self-test.ts` - Health check system
+   - `.claude/Hooks/validate-protected.ts` - Protection validator
    - `.pai-protected.json` - This manifest
 
 3. **Sanitized Config**
@@ -247,10 +247,10 @@ See `.pai-protected.json` for the complete list.
 **Before every PAI commit:**
 ```bash
 # 1. Test PAI works
-bun ~/Projects/PAI/.claude/hooks/self-test.ts
+bun ~/Projects/PAI/.claude/Hooks/self-test.ts
 
 # 2. Validate protected files
-bun ~/Projects/PAI/.claude/hooks/validate-protected.ts
+bun ~/Projects/PAI/.claude/Hooks/validate-protected.ts
 
 # 3. Review changes
 git diff
@@ -292,10 +292,10 @@ Complete example of adding a new skill from Kai to PAI:
 
 ```bash
 # 1. Copy skill from Kai to PAI
-cp -r ${PAI_DIR}/skills/my-new-skill ~/Projects/PAI/.claude/skills/
+cp -r ${PAI_DIR}/Skills/my-new-skill ~/Projects/PAI/.claude/Skills/
 
 # 2. Sanitize the skill's SKILL.md
-cd ~/Projects/PAI/.claude/skills/my-new-skill
+cd ~/Projects/PAI/.claude/Skills/my-new-skill
 nano SKILL.md  # Remove any personal references
 
 # 3. Check if there's an .env or config file
@@ -303,17 +303,17 @@ nano SKILL.md  # Remove any personal references
 
 # 4. Test PAI
 cd ~/Projects/PAI
-bun .claude/hooks/self-test.ts
+bun .claude/Hooks/self-test.ts
 
 # 5. Validate protection
-bun .claude/hooks/validate-protected.ts
+bun .claude/Hooks/validate-protected.ts
 
 # 6. Review changes
 git status
 git diff
 
 # 7. Commit
-git add .claude/skills/my-new-skill
+git add .claude/Skills/my-new-skill
 git commit -m "feat(skills): add my-new-skill for doing X"
 
 # 8. Push
