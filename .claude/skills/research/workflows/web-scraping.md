@@ -1,18 +1,26 @@
 # Web Scraping Workflow
 
-Web scraping and crawling using WebFetch for simple pages, BrightData MCP for CAPTCHA/blocking, and Apify MCP for social media. Includes HTML parsing, rate limiting, and best practices for ethical scraping.
+Web scraping and crawling using WebFetch for simple pages (90% of cases). For protected sites, CAPTCHA, or social media, spawn the **@scraper agent** which loads heavy-duty MCPs on-demand.
+
+## Agent-Pool Architecture
+
+This workflow uses a **lean orchestrator + heavy agent** pattern:
+
+```
+Your Session (no heavy MCPs loaded)
+  ↓
+Layer 1: WebFetch (built-in, FREE) - handles 90% of cases
+  ↓ (if blocked/failed)
+Spawn @scraper agent (loads BrightData, Apify, Playwright)
+  ↓
+Agent returns results and terminates
+```
 
 ## 🎯 Load Full PAI Context
 
 **Before starting any task with this skill, load complete PAI context:**
 
 `Skill("CORE")` or `read ${PAI_DIR}/skills/CORE/SKILL.md`
-
-This provides access to:
-- Stack preferences and tool configurations
-- Security rules and repository safety protocols
-- Response format requirements
-- Personal preferences and operating instructions
 
 ## When to Activate This Skill
 - Scrape web pages
@@ -24,48 +32,115 @@ This provides access to:
 
 ## Decision Tree
 
-1. **Simple pages?** → Use WebFetch first
-2. **CAPTCHA/blocking?** → Use BrightData MCP (`mcp__brightdata__*`)
-3. **Social media?** → Use Apify MCP
+1. **Simple pages?** → Use WebFetch first (Layer 1)
+2. **WebFetch blocked/failed?** → Spawn @scraper agent
+3. **Known protected site?** → Spawn @scraper agent directly
+4. **Social media?** → Spawn @scraper agent (uses Apify Actors)
 
 ## Common Tasks
 
 ### Extract All Links from Page
-1. Use WebFetch to get HTML
-2. Parse HTML for <a> tags
-3. Extract href attributes
+```typescript
+// Layer 1 - try first
+WebFetch({
+  url: "https://example.com",
+  prompt: "Extract all links from this page with their anchor text"
+})
+```
 
 ### Scrape Product Listings
-1. Use appropriate tool (WebFetch or BrightData)
-2. Parse HTML for product containers
-3. Extract data (title, price, image, etc.)
+```typescript
+// Layer 1 - try first
+WebFetch({
+  url: "https://shop.example.com/products",
+  prompt: "Extract product listings: name, price, image URL, product URL"
+})
+
+// If blocked, spawn agent
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Scrape product listings from: https://shop.example.com/products
+    Extract: product name, price, image URL, product URL
+    Return as JSON array.
+  `,
+  model: "sonnet"
+})
+```
 
 ### Crawl Multiple Pages
-1. Start with index/listing page
-2. Extract links to detail pages
-3. Fetch each detail page
-4. Extract data from each
+```typescript
+// 1. Get listing page with Layer 1
+WebFetch({ url: indexUrl, prompt: "Extract all product detail page URLs" })
+
+// 2. Fetch each detail page (parallel)
+WebFetch({ url: url1, prompt: "Extract product details" })
+WebFetch({ url: url2, prompt: "Extract product details" })
+// ...
+
+// 3. If any fail, spawn agent for failed URLs
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Batch scrape these failed URLs:
+    - ${failedUrl1}
+    - ${failedUrl2}
+    Extract product details from each.
+  `,
+  model: "sonnet"
+})
+```
+
+### Social Media Extraction
+```typescript
+// Always spawn agent for social media
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    Extract last 20 posts from Instagram user: @username
+    Use Apify instagram-scraper Actor.
+    Return: post text, image URLs, likes, comments, timestamp
+  `,
+  model: "sonnet"
+})
+```
 
 ## Best Practices
 
 ### Do's
+✅ Try WebFetch first (free, fast)
+✅ Only spawn agent when WebFetch fails
 ✅ Check robots.txt first
 ✅ Add delays between requests
 ✅ Handle errors gracefully
-✅ Use appropriate tool for site
-✅ Cache results when possible
 
 ### Don'ts
+❌ Don't spawn agent for simple pages
 ❌ Don't scrape too fast
 ❌ Don't ignore rate limits
 ❌ Don't scrape personal data without permission
-❌ Don't bypass security maliciously
 
-## Rate Limiting
-- Add delays between requests (`sleep 1`)
-- Respect robots.txt
-- Don't overwhelm servers
+## Spawning the @scraper Agent
+
+```typescript
+Task({
+  subagent_type: "scraper",
+  prompt: `
+    [Describe what to scrape]
+    URL(s): [target URLs]
+    Extract: [what data to extract]
+    Format: [markdown/JSON/etc]
+
+    WebFetch error (if applicable): [error message]
+  `,
+  model: "sonnet"
+})
+```
+
+The agent has access to:
+- **BrightData** - CAPTCHA bypass, bot detection bypass
+- **Apify** - Social media scrapers, e-commerce scrapers
+- **Playwright** - JavaScript SPAs, form filling, screenshots
 
 ## Supplementary Resources
-For advanced scraping: `read ${PAI_DIR}/docs/web-scraping-advanced.md`
-For MCP tools: `read ${PAI_DIR}/docs/mcp-servers-reference.md`
+For detailed retrieval strategies: `read ${PAI_DIR}/skills/research/workflows/retrieve.md`

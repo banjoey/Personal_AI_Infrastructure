@@ -35,8 +35,29 @@ Secrets skill adapts to the environment based on git branch:
 
 | Branch | Vault | CI/CD Variables | Runtime Injection |
 |--------|-------|-----------------|-------------------|
-| joey-all (Home) | Bitwarden | GitLab CI/CD | Docker env vars |
+| joey-all (Home) | Bitwarden + Infisical | GitLab CI/CD | K8s Secrets via Infisical |
 | merlin-all (Work) | CyberArk | GitHub Secrets | K8s Secrets |
+
+### Kubernetes Secrets (Home Lab)
+
+For k3s workloads, use **Infisical** as the secrets management platform:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    SECRETS FLOW (k3s)                           │
+│                                                                 │
+│  Bitwarden → Infisical → InfisicalSecret CRD → K8s Secret      │
+│  (master)   (centralized)  (operator)          (workload)       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Infisical URL:** https://secrets.barkleyfarm.com
+
+**Usage:**
+1. Store master secrets in Bitwarden (backup)
+2. Add secrets to Infisical project via UI or CLI
+3. Create InfisicalSecret CRD in k8s to sync
+4. Workloads consume native K8s Secrets
 
 ## Guardrails (ENFORCEMENT)
 
@@ -210,7 +231,7 @@ curl -X POST "https://gitlab.com/api/v4/projects/[ID]/variables" \
 gh secret set DISCORD_WEBHOOK_URL --body "$SECRET_VALUE"
 ```
 
-## Bitwarden Integration (Home)
+## Bitwarden Integration (Home - Master Backup)
 
 **Prerequisites:**
 - Bitwarden CLI installed: `brew install bitwarden-cli`
@@ -231,6 +252,94 @@ bw create item '{
 **Retrieve secret:**
 ```bash
 bw get item "Discord Webhook - Investment Bot" | jq -r '.notes'
+```
+
+## Infisical Integration (Home - k3s Workloads)
+
+**Infisical** is the centralized secrets manager for all k3s deployments.
+
+**URL:** https://secrets.barkleyfarm.com
+
+### CLI Setup
+
+```bash
+# Install CLI
+brew install infisical/get-cli/infisical
+
+# Login
+infisical login
+
+# Set default project
+infisical init
+```
+
+### Adding Secrets via CLI
+
+```bash
+# Add secret to development environment
+infisical secrets set DISCORD_WEBHOOK_URL="https://discord.com/..." --env=dev
+
+# Add secret to production
+infisical secrets set DISCORD_WEBHOOK_URL="https://discord.com/..." --env=prod
+
+# List secrets
+infisical secrets --env=prod
+```
+
+### Syncing to Kubernetes
+
+Create an InfisicalSecret CRD to sync secrets to a Kubernetes namespace:
+
+```yaml
+apiVersion: secrets.infisical.com/v1alpha1
+kind: InfisicalSecret
+metadata:
+  name: my-app-secrets
+  namespace: my-app
+spec:
+  # Authentication with Infisical
+  authentication:
+    universalAuth:
+      secretsScope:
+        projectSlug: my-project
+        envSlug: prod
+      credentialsRef:
+        secretName: infisical-machine-identity
+        secretNamespace: infisical-operator
+
+  # Where to sync the secrets
+  managedSecretReference:
+    secretName: my-app-env
+    secretNamespace: my-app
+    creationPolicy: Owner
+
+  # Sync interval
+  resyncInterval: 60
+```
+
+### Machine Identity Setup
+
+For the operator to authenticate with Infisical:
+
+1. Create Machine Identity in Infisical UI
+2. Generate client credentials
+3. Create K8s secret with credentials:
+
+```bash
+kubectl create secret generic infisical-machine-identity \
+  -n infisical-operator \
+  --from-literal=clientId=<CLIENT_ID> \
+  --from-literal=clientSecret=<CLIENT_SECRET>
+```
+
+### Workflow: Adding Secret for k3s App
+
+```
+1. Add to Bitwarden (master backup)
+2. Add to Infisical project (via CLI or UI)
+3. Create InfisicalSecret CRD in GitOps repo
+4. Operator syncs to K8s Secret
+5. App deployment references K8s Secret
 ```
 
 ## Secret Lifecycle
