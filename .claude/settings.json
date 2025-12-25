@@ -86,6 +86,15 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/Hooks/spec-check.ts"
+          }
+        ]
+      },
+      {
         "matcher": "*",
         "hooks": [
           {

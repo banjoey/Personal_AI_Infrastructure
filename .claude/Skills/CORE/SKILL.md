@@ -25,6 +25,7 @@ This ensures workflows appear in the observability dashboard AND the user sees t
 
 | Action | Trigger | Behavior |
 |--------|---------|----------|
+| **Development** | "build", "create project", "new feature", "write code" | **SPEC FIRST.** Check for PRD, invoke Development skill |
 | **CLI Creation** | "create a CLI", "build command-line tool" | Use `system-createcli` skill |
 | **Git** | "push changes", "commit to repo" | Run git workflow |
 | **Delegation** | "use parallel interns", "parallelize" | Deploy parallel agents |
@@ -33,7 +34,17 @@ This ensures workflows appear in the observability dashboard AND the user sees t
 
 ## Examples
 
-**Example 1: Push PAI updates to GitHub**
+**Example 1: Starting a new project (SPEC FIRST)**
+```
+User: "Build me a Discord bot"
+→ STOP. Check: Does a spec/PRD exist?
+→ NO: "Before we build, let's define what we're building.
+       What should this bot do? I'll create a quick PRD."
+→ Create PRD via AgilePm skill
+→ THEN proceed with implementation
+```
+
+**Example 2: Push PAI updates to GitHub**
 ```
 User: "Push these changes"
 → Invokes Git workflow
@@ -42,7 +53,7 @@ User: "Push these changes"
 → Pushes to private PAI repo
 ```
 
-**Example 2: Delegate parallel research tasks**
+**Example 3: Delegate parallel research tasks**
 ```
 User: "Research these 5 companies for me"
 → Invokes Delegation workflow
