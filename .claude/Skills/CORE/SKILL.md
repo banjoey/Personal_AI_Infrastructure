@@ -335,42 +335,36 @@ rules:
 
 ---
 
-## DevGuard Enforcement (MANDATORY - Constitutional)
+## Research Before Action (MANDATORY - Constitutional)
 
-**CRITICAL: Research before coding is NOT optional. It's a constitutional requirement.**
+**CRITICAL: Verify before acting. This applies to ALL domains - code, infrastructure, and operations.**
+
+> "The documentation is smarter than your training data." - Core PAI Principle
 
 This exists because:
 1. Training data has a cutoff - knowledge may be outdated
-2. Libraries update constantly - security fixes, new APIs, deprecations
+2. Libraries and APIs update constantly - security fixes, deprecations
 3. Best practices evolve - what was right in 2023 may be wrong in 2025
 4. Memory is not documentation - official docs are the source of truth
 
-### Mandatory Research Todo Pattern
+### The Universal Pattern
 
-**BEFORE writing ANY significant code, you MUST create research todos FIRST:**
+Before ANY significant action:
 
 ```
-User: "Implement JWT authentication"
-
-REQUIRED RESPONSE:
-1. TodoWrite:
-   - "Research JWT best practices 2025"
-   - "Check jsonwebtoken/jose library current API"
-   - "Review OWASP authentication guidance"
-2. Complete research using WebSearch/WebFetch
-3. Document findings
-4. ONLY THEN proceed to Write/Edit code files
+1. STOP  - Pause before acting
+2. CHECK - Consult official docs for current version
+3. VERIFY - Confirm the approach is still valid
+4. ACT   - Proceed with verified knowledge
 ```
 
-### Triggers That Require Research
+### Domain-Specific Triggers
 
-| Trigger | Required Research |
-|---------|-------------------|
-| Adding dependency | Check maintenance, CVEs, license, alternatives |
-| Implementing feature | Current framework patterns, best practices |
-| Security-sensitive code | OWASP guidance, current recommendations |
-| API integration | Official docs for current version |
-| Database/ORM code | Current query patterns, injection prevention |
+| Domain | Triggers | Research Required |
+|--------|----------|-------------------|
+| **Code** | Adding dependencies, auth code, DB queries | Check npm/pypi, OWASP, current API docs |
+| **Infrastructure** | helm upgrade, kubectl apply, version changes | Read release notes, check upgrade paths |
+| **Operations** | Production changes, config modifications | Verify prerequisites, confirm rollback plan |
 
 ### Warning Phrases (STOP and VERIFY)
 
@@ -380,33 +374,29 @@ If you catch yourself thinking:
 - "This should work..."
 - "I know how to implement this..."
 
-**STOP.** These phrases indicate you're about to code from memory instead of verified knowledge.
+**STOP.** These phrases indicate you're about to act from memory instead of verified knowledge.
 
-### Enforcement Checklist
+### Quick Checklist
 
-Before ANY Write/Edit to code files (.ts, .js, .py, .tsx, .jsx, etc.):
+Before acting on anything significant:
 
 ```
-[ ] Created research todos FIRST
-[ ] Completed research with WebSearch/WebFetch
-[ ] Verified library APIs are current
-[ ] Checked for deprecated patterns
-[ ] Reviewed security considerations (if applicable)
+[ ] Checked official docs for current version?
+[ ] Verified no breaking changes since last use?
+[ ] Confirmed the approach is still best practice?
+[ ] Know what "success" looks like?
+[ ] Have a rollback plan if needed?
 ```
 
-**VIOLATION:** Writing code without research todos = DevGuard constitutional violation.
+### The 2-Minute Rule
 
-### The DevGuard Principle
-
-> "The documentation is smarter than your training data."
-
-The 2 minutes spent verifying current best practices saves:
+The 2 minutes spent verifying saves:
 - Hours debugging subtle issues
 - Security vulnerabilities from outdated patterns
-- Technical debt from deprecated APIs
-- Embarrassment when code review catches outdated approaches
+- Failed deployments from skipped upgrade steps
+- Technical debt from deprecated approaches
 
-**See DevGuard skill for full workflows: PreCode, DependencyCheck, SecurityReview**
+**This is not optional. It's the difference between professional work and hoping your memory is accurate.**
 
 ---
 
