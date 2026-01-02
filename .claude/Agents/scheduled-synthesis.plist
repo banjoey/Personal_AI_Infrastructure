@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.pai.scheduled-synthesis</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/jbarkley/.bun/bin/bun</string>
+        <string>run</string>
+        <string>/Users/jbarkley/src/pai/CaptureIntelligence/tools/synthesis.ts</string>
+        <string>-w</string>
+        <string>/Users/jbarkley/workshop</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <!-- Run every Sunday at 6:00 PM -->
+        <key>Weekday</key>
+        <integer>0</integer>
+        <key>Hour</key>
+        <integer>18</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/jbarkley/workshop/captures/logs/synthesis.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/jbarkley/workshop/captures/logs/synthesis-error.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/jbarkley/workshop</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/jbarkley/.bun/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>WORKSPACE_ROOT</key>
+        <string>/Users/jbarkley/workshop</string>
+        <key>CAPTURE_TOOLS</key>
+        <string>/Users/jbarkley/src/pai/CaptureIntelligence/tools</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

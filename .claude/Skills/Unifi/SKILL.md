@@ -1,11 +1,35 @@
 ---
 name: Unifi
-description: UniFi network device management via MCP. USE WHEN user needs to manage UniFi devices, access points, clients, VLANs, firewall rules, WiFi networks, or any UniFi controller operations. Provides 81 MCP tools for complete network control.
+description: UniFi network device management via MCP or direct API. USE WHEN user needs to manage UniFi devices, access points, clients, VLANs, firewall rules, WiFi networks, or any UniFi controller operations. Provides 81 MCP tools plus local execution fallback when k3s is unavailable.
 ---
 
 # Unifi
 
-Vendor-specific skill for managing UniFi network infrastructure via MCP tools. Called by the Network skill for UniFi-specific operations.
+Vendor-specific skill for managing UniFi network infrastructure. Supports two execution modes:
+- **MCP Mode:** Uses k3s-hosted MCP server (normal operation)
+- **Local Mode:** Direct API calls from laptop using keychain credentials (fallback when k3s/ai2 is down)
+
+## Operation Modes
+
+### MCP Mode (Default)
+When k3s cluster is available, use MCP tools:
+```
+mcp__unifi__unifi_execute
+  tool: "unifi_list_clients"
+  arguments: {}
+```
+
+### Local Mode (Fallback)
+When k3s is down or you need to troubleshoot network issues, use local tools:
+```bash
+bun run ~/.claude/skills/Unifi/tools/ListClients.ts
+bun run ~/.claude/skills/Unifi/tools/ListDevices.ts
+bun run ~/.claude/skills/Unifi/tools/GetSystemInfo.ts
+```
+
+### Mode Selection
+- **Use MCP** when: Normal operations, k3s is healthy
+- **Use Local** when: k3s/ai2 is down, debugging network issues that affect MCP connectivity, you get "MCP unreachable" errors
 
 ## Workflow Routing
 
@@ -221,10 +245,39 @@ Then check status with `mcp__unifi__unifi_batch_status`.
 - **Site:** default
 - **Controller Type:** UniFi OS (requires `UNIFI_CONTROLLER_TYPE=proxy`)
 
-### Authentication
+### Authentication (MCP Mode)
 - Uses local admin account `charles` (no MFA)
-- Cloud accounts with MFA don't work with aiounifi API
-- Credentials in `~/.config/.env`
+- Cloud accounts with MFA don't work with unifi-client API
+- Credentials synced from Infisical to k8s secret
+
+### Authentication (Local Mode)
+Uses macOS keychain for secure credential storage:
+
+```bash
+# Set up credentials (one time)
+~/.claude/skills/Unifi/tools/setup-keychain.sh
+
+# Or manually:
+security add-generic-password -s unifi-controller -a host -w '10.0.0.1' -U
+security add-generic-password -s unifi-controller -a username -w 'charles' -U
+security add-generic-password -s unifi-controller -a password -w 'YOUR_PASSWORD' -U
+```
+
+## Local Tools Available
+
+| Tool | Description | Usage |
+|------|-------------|-------|
+| `ListClients.ts` | List connected clients | `bun run tools/ListClients.ts [--type=wireless] [--json]` |
+| `ListDevices.ts` | List UniFi devices | `bun run tools/ListDevices.ts [--json]` |
+| `GetSystemInfo.ts` | Controller info & health | `bun run tools/GetSystemInfo.ts` |
+
+### Shared Core Library
+Local tools import from `unifi-mcp-ts/src/core/` - the same TypeScript library used by the MCP server. This ensures:
+- **Single codebase:** Fix once, works everywhere
+- **Consistent behavior:** MCP and local produce identical results
+- **Easy extension:** Add tools to core, available in both modes
+
+**Core library path:** `~/src/mcp-servers/unifi-mcp-ts`
 
 ### MCP Configuration (k3s Deployment)
 

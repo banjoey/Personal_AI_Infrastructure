@@ -12,7 +12,7 @@
   },
   "_setupNote": "IMPORTANT: Run 'bash .claude/setup.sh' to automatically configure PAI_DIR. If you see hook errors mentioning '__HOME__', the setup script was not run or you need to manually change PAI_DIR below to your actual home directory path (e.g., /Users/john/.claude on macOS or /home/john/.claude on Linux).",
   "env": {
-    "PAI_DIR": "__HOME__/.claude",
+    "PAI_DIR": "/Users/jbarkley/PAI/.claude",
     "DA": "PAI",
     "ASSISTANT_NAME": "PAI",
     "USER_NAME": "User",
@@ -81,7 +81,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/security-validator.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/security-validator.ts"
           }
         ]
       },
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/spec-check.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/spec-check.ts"
           }
         ]
       },
@@ -99,7 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type PreToolUse"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type PreToolUse"
           }
         ]
       }
@@ -110,15 +110,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-tool-output.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-tool-output.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type PostToolUse"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type PostToolUse"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/update-tab-on-action.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/update-tab-on-action.ts"
           }
         ]
       }
@@ -128,11 +128,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-session-summary.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-session-summary.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type SessionEnd"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type SessionEnd"
           }
         ]
       }
@@ -142,11 +142,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/update-tab-titles.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/update-tab-titles.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type UserPromptSubmit"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type UserPromptSubmit"
           }
         ]
       }
@@ -156,15 +156,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/load-core-context.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/load-core-context.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/initialize-session.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/initialize-session.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type SessionStart"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type SessionStart"
           }
         ]
       }
@@ -174,11 +174,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/stop-hook.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/stop-hook.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type Stop"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type Stop"
           }
         ]
       }
@@ -188,11 +188,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/subagent-stop-hook.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/subagent-stop-hook.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type SubagentStop"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type SubagentStop"
           }
         ]
       }
@@ -203,11 +203,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/context-compression-hook.ts"
+            "command": "${PAI_DIR}/.claude/Hooks/context-compression-hook.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/Hooks/capture-all-events.ts --event-type PreCompact"
+            "command": "${PAI_DIR}/.claude/Hooks/capture-all-events.ts --event-type PreCompact"
           }
         ]
       }

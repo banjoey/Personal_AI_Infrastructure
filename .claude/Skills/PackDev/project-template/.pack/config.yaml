@@ -1,0 +1,26 @@
+# PackDev Configuration
+# See: https://gitlab.com/mikmattley/packdev/-/blob/main/docs/CONFIG.md
+
+version: 1
+
+# Project identification
+project:
+  name: "[PROJECT_NAME]"
+  prefix: "PROJ"  # Change to your Linear project prefix
+
+# Server settings (for MCP mode)
+server:
+  name: "pack-mcp"
+  log_level: "info"
+  log_format: "pretty"
+
+# Phase gate settings
+gates:
+  require_spec_approval: true
+  require_design_approval: true
+  require_ship_approval: true
+
+# Artifact settings
+artifacts:
+  stories_dir: "stories"
+  require_threat_model: false  # Set true for security-sensitive projects

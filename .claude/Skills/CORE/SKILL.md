@@ -31,6 +31,7 @@ This ensures workflows appear in the observability dashboard AND the user sees t
 | **Delegation** | "use parallel interns", "parallelize" | Deploy parallel agents |
 | **Merge** | "merge conflict", "complex decision" | Use /plan mode |
 | **PAI Config** | "auto-load context", "save context", "configure updates" | See PAI Configuration section below |
+| **Linear** | "create issue", "Linear", "ticket", "backlog item" | Use `Linear` skill (direct API, not MCP) |
 
 ## Examples
 
