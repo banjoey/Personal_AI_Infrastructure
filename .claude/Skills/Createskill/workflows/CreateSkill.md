@@ -1,20 +1,23 @@
 # CreateSkill Workflow
 
-Create a new skill following the canonical structure with proper TitleCase naming.
+Create a new skill following the canonical template with proper TitleCase naming.
 
 ## Step 1: Read the Authoritative Sources
 
 **REQUIRED FIRST:**
 
-1. Read the skill system documentation: `${PAI_DIR}/Skills/CORE/SkillSystem.md`
-2. Read the canonical example: `${PAI_DIR}/Skills/Blogging/SKILL.md`
+1. Read the skill template: `${PAI_DIR}/skills/SKILL-TEMPLATE.md`
+2. Study a top-scoring example:
+   - `${PAI_DIR}/skills/Linear/SKILL.md` (25/25) - For TypeScript CLI tools
+   - `${PAI_DIR}/skills/Unifi/SKILL.md` (25/25) - For MCP integration
 
 ## Step 2: Understand the Request
 
 Ask the user:
 1. What does this skill do?
-2. What should trigger it?
+2. What should trigger it? (USE WHEN phrases)
 3. What workflows does it need?
+4. What CLI tools should it have? (CRITICAL for high score)
 
 ## Step 3: Determine TitleCase Names
 
@@ -22,134 +25,157 @@ Ask the user:
 
 | Component | Format | Example |
 |-----------|--------|---------|
-| Skill directory | TitleCase | `Blogging`, `Daemon`, `CreateSkill` |
-| Workflow files | TitleCase.md | `Create.md`, `UpdateDaemonInfo.md` |
-| Reference docs | TitleCase.md | `ProsodyGuide.md`, `ApiReference.md` |
-| Tool files | TitleCase.ts | `ManageServer.ts` |
-| Help files | TitleCase.help.md | `ManageServer.help.md` |
+| Skill directory | TitleCase | `StockAnalysis`, `Secrets`, `Linear` |
+| Workflow files | TitleCase.md | `Create.md`, `Analyze.md` |
+| Tool files | TitleCase.ts | `ListItems.ts`, `CreateItem.ts` |
 
 **Wrong naming (NEVER use):**
 - `create-skill`, `create_skill`, `CREATESKILL` → Use `CreateSkill`
-- `create.md`, `CREATE.md`, `create-info.md` → Use `Create.md`, `CreateInfo.md`
+- `create.md`, `CREATE.md`, `create-info.md` → Use `Create.md`
 
 ## Step 4: Create the Skill Directory
 
 ```bash
-mkdir -p ${PAI_DIR}/Skills/[SkillName]/workflows
-mkdir -p ${PAI_DIR}/Skills/[SkillName]/tools
-```
-
-**Example:**
-```bash
-mkdir -p ${PAI_DIR}/Skills/Daemon/workflows
-mkdir -p ${PAI_DIR}/Skills/Daemon/tools
+mkdir -p ${PAI_DIR}/skills/[SkillName]/workflows
+mkdir -p ${PAI_DIR}/skills/[SkillName]/tools
 ```
 
 ## Step 5: Create SKILL.md
 
-Follow this exact structure:
+Follow the template structure from `SKILL-TEMPLATE.md`:
 
 ```yaml
 ---
 name: SkillName
-description: [What it does]. USE WHEN [intent triggers using OR]. [Additional capabilities].
+description: Brief description. USE WHEN user mentions X, wants to Y, needs to Z, OR says "trigger phrase". Provides CLI tools for [capabilities].
 ---
 
 # SkillName
 
-[Brief description]
+One-sentence purpose statement.
 
 ## Workflow Routing
 
-**When executing a workflow, output this notification:**
+**When executing a workflow, call the notification script via Bash:**
 
-```
-Running the **WorkflowName** workflow from the **SkillName** skill...
-```
+\`\`\`bash
+${PAI_DIR}/tools/skill-workflow-notification WorkflowName SkillName
+\`\`\`
 
 | Workflow | Trigger | File |
 |----------|---------|------|
-| **WorkflowOne** | "trigger phrase" | `workflows/WorkflowOne.md` |
-| **WorkflowTwo** | "another trigger" | `workflows/WorkflowTwo.md` |
+| **WorkflowOne** | "trigger phrase", "action words" | `workflows/WorkflowOne.md` |
+
+## Tools
+
+All tools are TypeScript CLIs for deterministic execution.
+
+| Tool | Purpose | File |
+|------|---------|------|
+| **ToolOne** | What it does | `tools/ToolOne.ts` |
 
 ## Examples
 
-**Example 1: [Common use case]**
-```
-User: "[Typical user request]"
-→ Invokes WorkflowOne workflow
-→ [What skill does]
-→ [What user gets back]
-```
+**Example 1: [Use case]**
+\`\`\`
+User: "Natural language request"
+→ Runs tools/ToolOne.ts with parameters
+→ Returns: Expected output
+\`\`\`
 
 **Example 2: [Another use case]**
-```
-User: "[Different request]"
-→ [Process]
-→ [Output]
+\`\`\`
+User: "Different request"
+→ Invokes WorkflowOne workflow
+→ Returns: Expected output
+\`\`\`
+
+## Common Operations
+
+### Operation name
+\`\`\`bash
+bun run tools/ToolOne.ts --option=value
+\`\`\`
 ```
 
-## [Additional Documentation]
+## Step 6: Create CLI Tools
 
-[Any other relevant info]
+**CRITICAL: Skills without tools score 1/5 on Determinism.**
+
+Follow the tool template from `SKILL-TEMPLATE.md`:
+
+```typescript
+#!/usr/bin/env bun
+/**
+ * ToolName - Brief description
+ *
+ * Usage:
+ *   bun run tools/ToolName.ts REQUIRED_ARG [options]
+ *
+ * Examples:
+ *   bun run tools/ToolName.ts "value"
+ */
+
+async function main() {
+  const args = process.argv.slice(2);
+
+  if (args.length === 0 || args[0] === '--help') {
+    console.log('Usage: ...');
+    process.exit(0);
+  }
+
+  // Tool logic here
+}
+
+main();
 ```
 
-## Step 6: Create Workflow Files
+## Step 7: Create Workflow Files
 
 For each workflow in the routing section:
 
 ```bash
-touch ${PAI_DIR}/Skills/[SkillName]/workflows/[WorkflowName].md
+touch ${PAI_DIR}/skills/[SkillName]/workflows/[WorkflowName].md
 ```
 
-**Examples (TitleCase):**
-```bash
-touch ${PAI_DIR}/Skills/Daemon/workflows/UpdateDaemonInfo.md
-touch ${PAI_DIR}/Skills/Daemon/workflows/UpdatePublicRepo.md
-touch ${PAI_DIR}/Skills/Blogging/workflows/Create.md
-touch ${PAI_DIR}/Skills/Blogging/workflows/Publish.md
-```
+## Step 8: Scoring Checklist
 
-## Step 7: Verify TitleCase
+Before finalizing, verify the skill scores well:
 
-Run this check:
-```bash
-ls ${PAI_DIR}/Skills/[SkillName]/
-ls ${PAI_DIR}/Skills/[SkillName]/workflows/
-ls ${PAI_DIR}/Skills/[SkillName]/tools/
-```
+| Dimension | Target | How |
+|-----------|--------|-----|
+| **Determinism** | 4-5 | Has CLI tools in tools/ |
+| **Routing** | 4-5 | Clear USE WHEN with specific triggers |
+| **Clarity** | 4-5 | Explicit instructions, structured |
+| **Examples** | 4-5 | 3+ concrete input/output examples |
+| **Structure** | 4-5 | SKILL.md, tools/, workflows/ |
 
-Verify ALL files use TitleCase:
-- `SKILL.md` ✓ (exception - always uppercase)
-- `WorkflowName.md` ✓
-- `ToolName.ts` ✓
-- `ToolName.help.md` ✓
+**Target Score:** 20+ out of 25
 
-## Step 8: Final Checklist
+## Final Checklist
 
 ### Naming (TitleCase)
-- [ ] Skill directory uses TitleCase (e.g., `Blogging`, `Daemon`)
-- [ ] All workflow files use TitleCase (e.g., `Create.md`, `UpdateInfo.md`)
-- [ ] All reference docs use TitleCase (e.g., `ProsodyGuide.md`)
-- [ ] All tool files use TitleCase (e.g., `ManageServer.ts`)
-- [ ] Routing table workflow names match file names exactly
+- [ ] Skill directory uses TitleCase
+- [ ] All workflow files use TitleCase
+- [ ] All tool files use TitleCase
+- [ ] Routing table names match file names exactly
 
 ### YAML Frontmatter
 - [ ] `name:` uses TitleCase
-- [ ] `description:` is single-line with embedded `USE WHEN` clause
-- [ ] No separate `triggers:` or `workflows:` arrays
-- [ ] Description uses intent-based language
-- [ ] Description is under 1024 characters
+- [ ] `description:` includes USE WHEN triggers
+- [ ] Description under 1024 characters
 
-### Markdown Body
-- [ ] `## Workflow Routing` section with table format
-- [ ] All workflow files have routing entries
-- [ ] `## Examples` section with 2-3 concrete usage patterns
+### Required Sections
+- [ ] `## Workflow Routing` table
+- [ ] `## Tools` table (CRITICAL)
+- [ ] `## Examples` with 3+ concrete patterns
+- [ ] `## Common Operations` with CLI commands
 
 ### Structure
-- [ ] `tools/` directory exists (even if empty)
+- [ ] `tools/` directory with at least one .ts file
+- [ ] `workflows/` directory with workflow files
 - [ ] No `backups/` directory inside skill
 
 ## Done
 
-Skill created following canonical structure with proper TitleCase naming throughout.
+Skill created following the canonical template. Target score: 20+/25.

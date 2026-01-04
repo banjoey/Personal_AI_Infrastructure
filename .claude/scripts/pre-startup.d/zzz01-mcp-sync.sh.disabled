@@ -1,8 +1,26 @@
 #!/bin/bash
 
 #
-# 01-mcp-sync.sh
+# zzz01-mcp-sync.sh.disabled
 #
+# STATUS: DISABLED (2026-01-03)
+#
+# REASON: PAI is transitioning from MCP servers to direct API calls via
+# TypeScript skill tools. This provides:
+#   - Token savings (~10,700 tokens saved per session for Joplin alone)
+#   - Better control over API interactions
+#   - Reduced context bloat from MCP tool definitions
+#
+# The first migration was Joplin MCP -> Joplin skill with TypeScript tools.
+# Future migrations: GitLab, Cloudflare, etc.
+#
+# This sync script would re-introduce MCPs that we're intentionally removing.
+# Kept for reference but renamed with 'zzz' prefix and '.disabled' suffix
+# to prevent execution.
+#
+# To re-enable: mv zzz01-mcp-sync.sh.disabled 01-mcp-sync.sh
+#
+# ORIGINAL DESCRIPTION:
 # Pre-startup module: Sync MCP configurations
 #
 # Merge Logic:

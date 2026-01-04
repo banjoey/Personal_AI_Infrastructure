@@ -69,21 +69,35 @@ if [ -f "$claude_dir/settings.json" ]; then
     fi
 fi
 
-# Check .mcp.json (current Claude Code default)
-if [ -f "$claude_dir/.mcp.json" ]; then
-    mcp_json_data=$(jq -r '.mcpServers | keys | join(" "), length' "$claude_dir/.mcp.json" 2>/dev/null)
-    if [ -n "$mcp_json_data" ] && [ "$mcp_json_data" != "null" ]; then
-        mcp_json_names=$(echo "$mcp_json_data" | head -1)
-        mcp_json_count=$(echo "$mcp_json_data" | tail -1)
+# Check .mcp.json (current Claude Code default) - try multiple locations
+# Location 1: $claude_dir/.mcp.json (legacy)
+# Location 2: $PAI_DIR/.claude/.mcp.json (PAI standard)
+# Location 3: $HOME/.claude/.mcp.json (global)
+for mcp_config in "$claude_dir/.mcp.json" "${PAI_DIR}/.claude/.mcp.json" "$HOME/.claude/.mcp.json"; do
+    if [ -f "$mcp_config" ]; then
+        mcp_json_data=$(jq -r '.mcpServers | keys | join(" "), length' "$mcp_config" 2>/dev/null)
+        if [ -n "$mcp_json_data" ] && [ "$mcp_json_data" != "null" ]; then
+            mcp_json_names=$(echo "$mcp_json_data" | head -1)
+            mcp_json_count=$(echo "$mcp_json_data" | tail -1)
 
-        # Combine with settings.json results
-        if [ -n "$mcp_names_raw" ]; then
-            mcp_names_raw="$mcp_names_raw $mcp_json_names"
-        else
-            mcp_names_raw="$mcp_json_names"
+            # Skip if count is 0 or empty
+            if [ -n "$mcp_json_count" ] && [ "$mcp_json_count" != "0" ]; then
+                # Combine with previous results
+                if [ -n "$mcp_names_raw" ]; then
+                    mcp_names_raw="$mcp_names_raw $mcp_json_names"
+                else
+                    mcp_names_raw="$mcp_json_names"
+                fi
+                mcps_count=$((mcps_count + mcp_json_count))
+            fi
         fi
-        mcps_count=$((mcps_count + mcp_json_count))
     fi
+done
+
+# Deduplicate MCP names (in case same MCP in multiple configs)
+if [ -n "$mcp_names_raw" ]; then
+    mcp_names_raw=$(echo "$mcp_names_raw" | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed 's/ $//')
+    mcps_count=$(echo "$mcp_names_raw" | wc -w | tr -d ' ')
 fi
 
 # Count Services (optimized - count .md files directly)
@@ -124,28 +138,29 @@ if [ "$cache_needs_update" = true ]; then
     # Try to acquire lock (non-blocking)
     if mkdir "$LOCK_FILE" 2>/dev/null; then
         # We got the lock - update cache with timeout
-        if command -v bunx >/dev/null 2>&1; then
-            # Run ccusage with a timeout (5 seconds for faster updates)
-            # Check if gtimeout is available (macOS), otherwise try timeout (Linux)
+        if command -v bunx >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+            # Use JSON output for accurate numbers (table output truncates large numbers with …)
+            # Use --offline flag for faster execution (uses cached pricing data)
+            # Run with timeout if available (ccusage can take 10-15 seconds)
             if command -v gtimeout >/dev/null 2>&1; then
-                ccusage_output=$(gtimeout 5 bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
+                ccusage_json=$(gtimeout 20 bunx ccusage daily --json --offline 2>/dev/null)
             elif command -v timeout >/dev/null 2>&1; then
-                ccusage_output=$(timeout 5 bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
+                ccusage_json=$(timeout 20 bunx ccusage daily --json --offline 2>/dev/null)
             else
-                # Fallback without timeout (but faster than before)
-                ccusage_output=$(bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
+                ccusage_json=$(bunx ccusage daily --json --offline 2>/dev/null)
             fi
 
-            if [ -n "$ccusage_output" ]; then
-                # Extract input/output tokens, removing commas and ellipsis
-                daily_input=$(echo "$ccusage_output" | awk -F'│' '{print $4}' | sed 's/[^0-9]//g' | head -c 10)
-                daily_output=$(echo "$ccusage_output" | awk -F'│' '{print $5}' | sed 's/[^0-9]//g' | head -c 10)
-                # Extract cost, keep the dollar sign
-                daily_cost=$(echo "$ccusage_output" | awk -F'│' '{print $9}' | sed 's/^ *//;s/ *$//')
+            if [ -n "$ccusage_json" ]; then
+                # Extract totals from JSON - these are accurate full numbers
+                daily_total_raw=$(echo "$ccusage_json" | jq -r '.totals.totalTokens // empty' 2>/dev/null)
+                daily_cost_raw=$(echo "$ccusage_json" | jq -r '.totals.totalCost // empty' 2>/dev/null)
 
-                if [ -n "$daily_input" ] && [ -n "$daily_output" ]; then
-                    daily_total=$((daily_input + daily_output))
-                    daily_tokens=$(printf "%'d" "$daily_total" 2>/dev/null || echo "$daily_total")
+                if [ -n "$daily_total_raw" ]; then
+                    daily_tokens=$(printf "%'d" "$daily_total_raw" 2>/dev/null || echo "$daily_total_raw")
+                    # Format cost with dollar sign and 2 decimal places
+                    if [ -n "$daily_cost_raw" ]; then
+                        daily_cost=$(printf "\$%.2f" "$daily_cost_raw" 2>/dev/null || echo "\$$daily_cost_raw")
+                    fi
 
                     # Write to cache file (properly escape dollar sign)
                     echo "daily_tokens=\"$daily_tokens\"" > "$CACHE_FILE"
@@ -271,7 +286,15 @@ for mcp in $mcp_names_raw; do
         "Ref") formatted="${MCP_DEFAULT}Ref${RESET}" ;;
         "pai") formatted="${MCP_DEFAULT}Foundry${RESET}" ;;
         "playwright") formatted="${MCP_DEFAULT}Playwright${RESET}" ;;
-        *) formatted="${MCP_DEFAULT}${mcp^}${RESET}" ;;
+        "gitlab") formatted="${MCP_DEFAULT}GitLab${RESET}" ;;
+        "cloudflare") formatted="${MCP_DEFAULT}Cloudflare${RESET}" ;;
+        "joplin") formatted="${MCP_DEFAULT}Joplin${RESET}" ;;
+        # Portable capitalization fallback (works on bash 3.2+)
+        *)
+            first_char=$(echo "$mcp" | cut -c1 | tr '[:lower:]' '[:upper:]')
+            rest=$(echo "$mcp" | cut -c2-)
+            formatted="${MCP_DEFAULT}${first_char}${rest}${RESET}"
+            ;;
     esac
 
     if [ -z "$mcp_names_formatted" ]; then

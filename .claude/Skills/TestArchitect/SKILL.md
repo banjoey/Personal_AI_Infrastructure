@@ -1,79 +1,130 @@
 ---
 name: TestArchitect
-description: Test-first development strategy for PAI projects. USE WHEN user needs test strategy, coverage analysis, ATDD workflows, risk-based testing, or quality gates. Ensures tests are written before code, not after bugs appear.
+description: Test-first development with CLI enforcement tools. USE WHEN user needs test strategy, coverage analysis, ATDD workflows, risk-based testing, or quality gates. Provides CLI tools for ATDD enforcement and risk scoring.
 ---
 
 # TestArchitect
 
-Test strategy before code: prevent defects through acceptance test-driven development (ATDD).
+Test strategy before code: prevent defects through acceptance test-driven development (ATDD). Includes CLI tools for automated enforcement.
 
 ## Workflow Routing
 
-| Workflow | When to Use | Output |
-|----------|-------------|--------|
-| CreateTestStrategy | Planning new feature or sprint | Comprehensive test strategy with test types and coverage targets |
-| DefineCoverage | Analyzing existing code or setting quality gates | Coverage analysis report with gaps and improvement plan |
-| AcceptanceTestDrivenDevelopment | Starting development on user story | Acceptance tests in Given-When-Then format, test automation code |
-| RiskBasedTesting | Prioritizing test efforts for sprint/release | Risk matrix with coverage targets by risk level, test effort allocation |
-| CiCdQualityGates | Setting up or improving CI/CD pipeline | Quality gate definitions, CI/CD configuration (GitHub Actions/GitLab CI) |
+**When executing a workflow, call the notification script via Bash:**
+
+```bash
+${PAI_DIR}/tools/skill-workflow-notification WorkflowName TestArchitect
+```
+
+| Workflow | Trigger | File |
+|----------|---------|------|
+| **CreateTestStrategy** | "test strategy", "test plan", "testing approach" | `workflows/CreateTestStrategy.md` |
+| **DefineCoverage** | "coverage analysis", "coverage gaps", "quality gates" | `workflows/DefineCoverage.md` |
+| **AcceptanceTestDrivenDevelopment** | "ATDD", "acceptance tests", "Given-When-Then" | `workflows/AcceptanceTestDrivenDevelopment.md` |
+| **RiskBasedTesting** | "risk matrix", "test prioritization", "risk assessment" | `workflows/RiskBasedTesting.md` |
+| **CiCdQualityGates** | "CI/CD gates", "pipeline quality", "test automation" | `workflows/CiCdQualityGates.md` |
+
+## Tools
+
+All tools are TypeScript CLIs for deterministic test enforcement.
+
+| Tool | Purpose | File |
+|------|---------|------|
+| **atdd-enforcer** | Ensure acceptance tests exist before code | `tools/atdd-enforcer.ts` |
+| **risk-scorer** | Calculate risk scores and coverage targets | `tools/risk-scorer.ts` |
 
 ## Examples
 
-### Example 1: Create test strategy for feature
+**Example 1: Check ATDD compliance for a story**
 ```
-User: "Create test strategy for user authentication"
-Skill loads: TestArchitect → CreateTestStrategy workflow
-Output: Test types (unit/integration/E2E), coverage targets (90% for auth), test scenarios
-```
-
-### Example 2: Analyze test coverage gaps
-```
-User: "Analyze test coverage for the payment module"
-Skill loads: TestArchitect → DefineCoverage workflow
-Output: Coverage report (65% → 85% target), gap analysis, improvement plan
+User: "Check if US-42 has all required tests"
+→ Runs tools/atdd-enforcer.ts check --story US-42
+→ Returns: 4/5 scenarios tested (80%), 1 missing test for "password expired" scenario
 ```
 
-### Example 3: Define tests for user story
-```
-User: "What tests do we need for password reset feature?"
-Skill loads: TestArchitect → CreateTestStrategy workflow (focused on password reset)
-Output: Test scenarios (happy path, expired token, invalid email, etc.)
-```
-
-### Example 4: Write acceptance tests for user story
-```
-User: "Write acceptance tests for US-42 (password reset)"
-Skill loads: TestArchitect → AcceptanceTestDrivenDevelopment workflow
-Output: Given-When-Then scenarios, Playwright/Cypress test automation code, test data fixtures
-```
-
-### Example 5: Assess risk and prioritize testing
+**Example 2: Generate risk matrix for sprint**
 ```
 User: "What should we focus testing on this sprint?"
-Skill loads: TestArchitect → RiskBasedTesting workflow
-Output: Risk matrix (auth=Critical 90%, cart=Medium 70%), test effort allocation (40 hours)
+→ Runs tools/risk-scorer.ts matrix --hours 40
+→ Returns: Risk matrix with 2 critical (auth, payment), 3 high, test hour allocation
 ```
 
-### Example 6: Set up CI/CD quality gates
+**Example 3: Pre-commit ATDD enforcement**
 ```
-User: "Configure quality gates for GitHub Actions"
-Skill loads: TestArchitect → CiCdQualityGates workflow
-Output: GitHub Actions YAML config, coverage thresholds, security gates, bundle size limits
+User: "Set up ATDD pre-commit hooks"
+→ Runs tools/atdd-enforcer.ts init
+→ Configures .atddrc.json and husky pre-commit
+→ Returns: All commits now require acceptance tests
+```
+
+**Example 4: Get coverage recommendation for feature**
+```
+User: "What coverage do we need for the cart feature?"
+→ Runs tools/risk-scorer.ts recommend --feature cart
+→ Returns: Medium risk (2.8), 70-80% coverage, Unit + Integration + E2E tests
 ```
 
 ## Integration
 
-- Works with AgilePm skill (adds test requirements to user stories)
-- Works with Security skill (security test scenarios from threat model)
-- Follows test pyramid (70% unit, 20% integration, 10% E2E)
-- Generates test-strategy.md and coverage reports
+- **AgilePm Skill:** Adds test requirements to user stories
+- **Security Skill:** Security test scenarios from threat model
+- **Development Skill:** Pre-commit test enforcement
+- **Linear Skill:** Track test coverage issues
 
 ## Methodology
 
-This skill follows test-first principles:
-- ATDD (Acceptance Test-Driven Development)
-- Test Pyramid (Martin Fowler)
-- Risk-based testing (ISO 29119)
-- Coverage targets by risk (Critical: 90%, High: 80%, Medium: 70%, Low: 50%)
+| Framework | Purpose |
+|-----------|---------|
+| ATDD | Acceptance Test-Driven Development (tests before code) |
+| Test Pyramid | 70% Unit, 20% Integration, 10% E2E |
+| Risk-Based Testing | Coverage targets by risk level (ISO 29119) |
+| Given-When-Then | BDD scenario format |
 
-Based on industry standards: ATDD, Test Pyramid, Risk-Based Testing, TDD.
+## Risk Levels & Coverage Targets
+
+| Risk Level | Score | Coverage | Test Types |
+|------------|-------|----------|------------|
+| Critical | 4.5-5.0 | 90-100% | Unit, Integration, E2E, Security, Perf, Pen |
+| High | 3.5-4.4 | 80-90% | Unit, Integration, E2E, Security |
+| Medium | 2.5-3.4 | 70-80% | Unit, Integration, E2E |
+| Low | 1.5-2.4 | 50-70% | Unit, Integration |
+| Very Low | 1.0-1.4 | 30-50% | Unit |
+
+## Common Operations
+
+### Check ATDD compliance for a story
+```bash
+npx ts-node tools/atdd-enforcer.ts check --story US-42
+```
+
+### Run ATDD pre-commit check
+```bash
+npx ts-node tools/atdd-enforcer.ts pre-commit
+```
+
+### Initialize ATDD config
+```bash
+npx ts-node tools/atdd-enforcer.ts init
+```
+
+### Generate risk matrix
+```bash
+npx ts-node tools/risk-scorer.ts matrix
+npx ts-node tools/risk-scorer.ts matrix --hours 40
+```
+
+### Get coverage recommendation
+```bash
+npx ts-node tools/risk-scorer.ts recommend --feature auth
+```
+
+### Initialize risk assessments
+```bash
+npx ts-node tools/risk-scorer.ts init
+```
+
+## Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `.atddrc.json` | ATDD enforcer config (story glob, test glob, coverage %) |
+| `risk-assessments.json` | Feature risk factors and justifications |

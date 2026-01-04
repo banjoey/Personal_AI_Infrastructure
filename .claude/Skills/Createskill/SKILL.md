@@ -9,9 +9,13 @@ MANDATORY skill creation framework for ALL skill creation requests.
 
 ## Authoritative Source
 
-**Before creating ANY skill, READ:** `${PAI_DIR}/Skills/CORE/SkillSystem.md`
+**Before creating ANY skill, READ:**
+1. `${PAI_DIR}/skills/SKILL-TEMPLATE.md` - Canonical template (from Unifi/Linear patterns)
+2. `${PAI_DIR}/skills/CORE/SkillSystem.md` - Skill system documentation
 
-**Canonical example to follow:** `${PAI_DIR}/Skills/Blogging/SKILL.md`
+**Top-scoring examples to follow:**
+- `${PAI_DIR}/skills/Unifi/SKILL.md` (25/25) - MCP tool integration
+- `${PAI_DIR}/skills/Linear/SKILL.md` (25/25) - TypeScript CLI tools
 
 ## TitleCase Naming Convention
 

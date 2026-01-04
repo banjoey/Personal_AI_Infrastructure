@@ -1,73 +1,112 @@
 ---
 name: Security
-description: Proactive security engineering for PAI projects. USE WHEN user needs threat modeling, CMMC compliance baseline, security requirements, vulnerability analysis, or security-first design. Prevents security issues during design, not after deployment.
+description: Shift-left security with CLI scanning tools. USE WHEN user needs threat modeling, dependency auditing, secrets scanning, CMMC compliance, or security-first design. Provides deterministic security scanning tools.
 ---
 
 # Security
 
-Shift-left security: identify and mitigate threats before code is written.
+Shift-left security: identify and mitigate threats before code is deployed. Includes CLI tools for automated security scanning.
 
 ## Workflow Routing
 
-| Workflow | When to Use | Output |
-|----------|-------------|--------|
-| ThreatModel | Designing new feature or system | Threat model document with STRIDE threats and mitigations |
-| CmmcBaseline | Starting DoD/government project | CMMC Level 2 compliance baseline (all 17 domains, 110 practices) |
-| SecurityReview | Reviewing code for vulnerabilities | Security review report with OWASP Top 10 findings and fixes |
-| InfrastructureSecurity | Auditing cloud/infrastructure config | Infrastructure security audit with hardening recommendations |
-| GenerateAudit | Creating CMMC compliance audit trail | Assessor-ready audit trail with findings, CMMC mapping, remediation status |
+**When executing a workflow, call the notification script via Bash:**
+
+```bash
+${PAI_DIR}/tools/skill-workflow-notification WorkflowName Security
+```
+
+| Workflow | Trigger | File |
+|----------|---------|------|
+| **ThreatModel** | "threat model", "STRIDE analysis", "security design" | `workflows/ThreatModel.md` |
+| **CmmcBaseline** | "CMMC", "compliance baseline", "DoD requirements" | `workflows/CmmcBaseline.md` |
+| **SecurityReview** | "security review", "OWASP check", "vulnerability review" | `workflows/SecurityReview.md` |
+| **InfrastructureSecurity** | "infrastructure audit", "cloud security", "config audit" | `workflows/InfrastructureSecurity.md` |
+| **GenerateAudit** | "generate audit", "compliance audit trail" | `workflows/GenerateAudit.md` |
+
+## Tools
+
+All tools are TypeScript CLIs for deterministic security scanning.
+
+| Tool | Purpose | File |
+|------|---------|------|
+| **DependencyAudit** | Scan dependencies for CVEs | `tools/DependencyAudit.ts` |
+| **SecretsScan** | Detect hardcoded secrets | `tools/SecretsScan.ts` |
 
 ## Examples
 
-### Example 1: Threat model a new feature
+**Example 1: Scan for vulnerable dependencies**
 ```
-User: "Threat model the user login feature"
-Skill loads: Security → ThreatModel workflow
-Output: STRIDE threats identified (spoofing, tampering, etc.) with mitigations
-```
-
-### Example 2: Generate CMMC baseline
-```
-User: "Create CMMC baseline for our e-commerce app"
-Skill loads: Security → CmmcBaseline workflow
-Output: CMMC practices mapped to features, gap analysis, compliance roadmap
+User: "Check this project for vulnerable dependencies"
+→ Runs tools/DependencyAudit.ts
+→ Returns: 3 critical, 5 high severity vulnerabilities with fix recommendations
 ```
 
-### Example 3: Code security review
+**Example 2: Scan for hardcoded secrets**
 ```
-User: "Review this authentication code for security vulnerabilities"
-Skill loads: Security → SecurityReview workflow
-Output: OWASP Top 10 analysis, vulnerability findings (SQL injection, weak passwords), remediation guidance
-```
-
-### Example 4: Infrastructure security audit
-```
-User: "Audit our AWS configuration for security issues"
-Skill loads: Security → InfrastructureSecurity workflow
-Output: Infrastructure security findings (open S3 buckets, weak IAM policies), CIS Benchmark gaps
+User: "Scan for any hardcoded secrets before I push"
+→ Runs tools/SecretsScan.ts
+→ Returns: 2 API keys found, 1 password in config, with remediation steps
 ```
 
-### Example 5: Generate CMMC audit trail
+**Example 3: Full security review**
 ```
-User: "Generate CMMC audit trail for our security review"
-Skill loads: Security → GenerateAudit workflow
-Output: Assessor-ready document with all findings mapped to CMMC practices, remediation timeline, evidence of controls
+User: "Do a full security review of the auth module"
+→ Invokes SecurityReview workflow
+→ Runs tools/DependencyAudit.ts and tools/SecretsScan.ts
+→ Performs OWASP Top 10 analysis
+→ Returns: Security report with findings and remediation plan
+```
+
+**Example 4: Threat model new feature**
+```
+User: "Threat model the payment processing feature"
+→ Invokes ThreatModel workflow
+→ Applies STRIDE methodology
+→ Returns: Threat model document with mitigations
 ```
 
 ## Integration
 
-- Works with AgilePm skill (adds security reqs to user stories)
-- Works with TestArchitect skill (security test scenarios from threat model)
-- Works with Standup skill (Daniel agent uses Security workflows for multi-agent reviews)
-- Generates threat-model.md for project documentation
-- Maps to CMMC practices for compliance
+- **AgilePm Skill:** Adds security requirements to user stories
+- **TestArchitect Skill:** Generates security test cases from threat model
+- **Standup Skill:** Multi-agent security reviews
+- **Development Skill:** Pre-commit security scanning
 
 ## Methodology
 
-This skill follows security-first principles:
-- Threat model during design (not after deployment)
-- STRIDE methodology (Microsoft's threat modeling framework)
-- CMMC Level 2 baseline (110 practices for DoD contractors)
-- Risk-based prioritization (fix critical threats first)
+| Framework | Purpose |
+|-----------|---------|
+| STRIDE | Threat modeling (Spoofing, Tampering, Repudiation, Info Disclosure, DoS, Elevation) |
+| OWASP Top 10 | Web application security |
+| CMMC Level 2 | DoD contractor compliance (110 practices) |
+| CIS Benchmarks | Infrastructure hardening |
 
-Based on industry standards: STRIDE, OWASP Top 10, CMMC Model v2.0.
+## Common Operations
+
+### Scan dependencies for vulnerabilities
+```bash
+bun run tools/DependencyAudit.ts
+bun run tools/DependencyAudit.ts ~/src/project --severity=high
+bun run tools/DependencyAudit.ts . --json
+```
+
+### Scan for hardcoded secrets
+```bash
+bun run tools/SecretsScan.ts
+bun run tools/SecretsScan.ts ~/src/project
+bun run tools/SecretsScan.ts . --json
+```
+
+### Pre-commit security check
+```bash
+bun run tools/SecretsScan.ts . && bun run tools/DependencyAudit.ts .
+```
+
+## Reference
+
+| Resource | Link |
+|----------|------|
+| OWASP Top 10 | https://owasp.org/Top10/ |
+| STRIDE | https://docs.microsoft.com/en-us/azure/security/develop/threat-modeling-tool |
+| CMMC | https://dodcio.defense.gov/CMMC/ |
+| CIS Benchmarks | https://www.cisecurity.org/cis-benchmarks |
